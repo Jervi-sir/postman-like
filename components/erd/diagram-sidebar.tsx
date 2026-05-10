@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Plus, Database, Trash2, FileText, Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Plus, Database, Trash2, FileText, Search, ChevronLeft, ChevronRight, Edit2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -19,6 +19,7 @@ interface DiagramSidebarProps {
   onSelectDiagram: (id: string) => void;
   onCreateDiagram: (name: string) => void;
   onDeleteDiagram: (id: string) => void;
+  onRenameDiagram: (id: string, name: string) => void;
 }
 
 export function DiagramSidebar({
@@ -26,6 +27,7 @@ export function DiagramSidebar({
   onSelectDiagram,
   onCreateDiagram,
   onDeleteDiagram,
+  onRenameDiagram,
 }: DiagramSidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [diagrams, setDiagrams] = useState<Diagram[]>([]);
@@ -71,6 +73,14 @@ export function DiagramSidebar({
       onCreateDiagram(name);
       // We'll rely on the parent to update or we can re-fetch
       setTimeout(fetchDiagrams, 500);
+    }
+  };
+
+  const handleRename = (id: string, currentName: string) => {
+    const newName = prompt('Enter new diagram name:', currentName);
+    if (newName && newName !== currentName) {
+      onRenameDiagram(id, newName);
+      setDiagrams(prev => prev.map(d => d.id === id ? { ...d, name: newName } : d));
     }
   };
 
@@ -153,20 +163,33 @@ export function DiagramSidebar({
                   {!isCollapsed && <span className="text-sm font-medium truncate">{diagram.name}</span>}
                 </div>
                 {!isCollapsed && (
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    className="h-7 w-7 opacity-0 group-hover:opacity-100 text-destructive hover:bg-destructive/10"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (confirm('Are you sure you want to delete this diagram?')) {
-                        onDeleteDiagram(diagram.id);
-                        setDiagrams(prev => prev.filter(d => d.id !== diagram.id));
-                      }
-                    }}
-                  >
-                    <Trash2 size={14} />
-                  </Button>
+                  <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="h-7 w-7 text-muted-foreground hover:text-foreground"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleRename(diagram.id, diagram.name);
+                      }}
+                    >
+                      <Edit2 size={13} />
+                    </Button>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="h-7 w-7 text-destructive hover:bg-destructive/10"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (confirm('Are you sure you want to delete this diagram?')) {
+                          onDeleteDiagram(diagram.id);
+                          setDiagrams(prev => prev.filter(d => d.id !== diagram.id));
+                        }
+                      }}
+                    >
+                      <Trash2 size={14} />
+                    </Button>
+                  </div>
                 )}
               </div>
             ))

@@ -2,7 +2,7 @@
 
 import React, { memo } from 'react';
 import { NodeProps, Position } from '@xyflow/react';
-import { Table, Hash, Key, Plus, MoreHorizontal } from 'lucide-react';
+import { Table, Hash, Key, Plus, MoreHorizontal, Edit2, Trash2 } from 'lucide-react';
 import { 
   DatabaseSchemaNode, 
   DatabaseSchemaNodeBody,
@@ -13,6 +13,7 @@ import { BaseNodeHeader, BaseNodeHeaderTitle } from '@/components/base-node';
 import { LabeledHandle } from '@/components/labeled-handle';
 import { BaseHandle } from '@/components/base-handle';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 
 export type Column = {
   id: string;
@@ -26,28 +27,49 @@ export type TableNodeData = {
   label: string;
   columns: Column[];
   onAddColumn?: (nodeId: string) => void;
+  onEditColumn?: (nodeId: string, column: Column) => void;
+  onDeleteColumn?: (nodeId: string, columnId: string) => void;
+  onDeleteTable?: (nodeId: string) => void;
+  onEditTable?: (nodeId: string, label: string) => void;
 };
 
 const TableNode = ({ id, data, selected }: NodeProps & { data: TableNodeData }) => {
   return (
-    <DatabaseSchemaNode className={cn("min-w-[240px] shadow-xl", selected && "ring-2 ring-primary border-primary")}>
+    <DatabaseSchemaNode className={cn("min-w-[260px] shadow-xl group/node", selected && "ring-2 ring-primary border-primary")}>
       <BaseNodeHeader className="bg-secondary/50 backdrop-blur-sm border-b rounded-t-md px-3 py-2.5">
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2.5 overflow-hidden">
           <div className="p-1.5 bg-background rounded-md border shadow-sm shrink-0 text-primary">
             <Table size={13} />
           </div>
-          <BaseNodeHeaderTitle className="text-sm font-bold text-foreground tracking-tight">
-            {data.label}
-          </BaseNodeHeaderTitle>
+          <div className="flex items-center gap-2 min-w-0">
+            <BaseNodeHeaderTitle className="text-sm font-bold text-foreground tracking-tight truncate">
+              {data.label}
+            </BaseNodeHeaderTitle>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="h-6 w-6 opacity-0 group-hover/node:opacity-100 transition-opacity"
+              onClick={() => data.onEditTable?.(id, data.label)}
+            >
+              <Edit2 size={10} />
+            </Button>
+          </div>
         </div>
-        <button className="text-muted-foreground hover:text-foreground transition-colors p-1 hover:bg-background/50 rounded-md">
-          <MoreHorizontal size={14} />
-        </button>
+        <div className="flex items-center gap-1 opacity-0 group-hover/node:opacity-100 transition-opacity">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="h-7 w-7 text-destructive hover:bg-destructive/10"
+            onClick={() => data.onDeleteTable?.(id)}
+          >
+            <Trash2 size={12} />
+          </Button>
+        </div>
       </BaseNodeHeader>
 
       <DatabaseSchemaNodeBody>
         {data.columns.map((column) => (
-          <DatabaseSchemaTableRow key={column.id} className="group relative transition-colors border-b-0 hover:bg-muted/30">
+          <DatabaseSchemaTableRow key={column.id} className="group/row relative transition-colors border-b-0 hover:bg-muted/30">
             <DatabaseSchemaTableCell className="p-0">
               <LabeledHandle
                 id={`${column.id}-left`}
@@ -56,7 +78,7 @@ const TableNode = ({ id, data, selected }: NodeProps & { data: TableNodeData }) 
                 title={column.name}
                 className="py-2 px-3"
                 labelClassName="font-semibold text-xs text-foreground/90"
-                handleClassName="!-left-[6px] opacity-0 group-hover:opacity-100 transition-opacity"
+                handleClassName="!-left-[6px] opacity-0 group-hover/row:opacity-100 transition-opacity"
               />
             </DatabaseSchemaTableCell>
             <DatabaseSchemaTableCell className="text-right pr-2">
@@ -64,15 +86,38 @@ const TableNode = ({ id, data, selected }: NodeProps & { data: TableNodeData }) 
                 {column.type}
               </span>
             </DatabaseSchemaTableCell>
-            <DatabaseSchemaTableCell className="w-8 p-0 pr-3">
+            <DatabaseSchemaTableCell className="w-20 p-0 pr-3">
               <div className="flex items-center justify-end gap-1 relative h-full">
-                {column.isPrimary && <Key size={10} className="text-amber-500 shrink-0" />}
-                {column.isForeignKey && <Hash size={10} className="text-blue-500 shrink-0" />}
+                <div className="flex items-center gap-1 mr-1">
+                  {column.isPrimary && <Key size={10} className="text-amber-500 shrink-0" />}
+                  {column.isForeignKey && <Hash size={10} className="text-blue-500 shrink-0" />}
+                </div>
+                
+                {/* Column Actions */}
+                <div className="flex items-center opacity-0 group-hover/row:opacity-100 transition-opacity">
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="h-6 w-6"
+                    onClick={() => data.onEditColumn?.(id, column)}
+                  >
+                    <Edit2 size={10} />
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="h-6 w-6 text-destructive hover:bg-destructive/10"
+                    onClick={() => data.onDeleteColumn?.(id, column.id)}
+                  >
+                    <Trash2 size={10} />
+                  </Button>
+                </div>
+
                 <BaseHandle
                   id={`${column.id}-right`}
                   type="source"
                   position={Position.Right}
-                  className="!-right-[6px] opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="!-right-[6px] opacity-0 group-hover/row:opacity-100 transition-opacity"
                 />
               </div>
             </DatabaseSchemaTableCell>

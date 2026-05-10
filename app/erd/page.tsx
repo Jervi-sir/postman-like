@@ -63,6 +63,19 @@ export default function ErdPage() {
     }
   };
 
+  const handleRenameDiagram = async (id: string, name: string) => {
+    try {
+      await fetch(`/api/diagrams/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name }),
+      });
+      toast.success('Diagram renamed');
+    } catch (error) {
+      toast.error('Failed to rename diagram');
+    }
+  };
+
   const handleSave = async (nodes: Node[], edges: Edge[], viewport: { x: number; y: number; zoom: number }) => {
     if (!currentDiagramId) return;
     try {
@@ -89,6 +102,7 @@ export default function ErdPage() {
         onSelectDiagram={fetchDiagram}
         onCreateDiagram={handleCreateDiagram}
         onDeleteDiagram={handleDeleteDiagram}
+        onRenameDiagram={handleRenameDiagram}
       />
       <div className="flex-1 flex flex-col min-w-0 bg-background">
         {currentDiagramId ? (
