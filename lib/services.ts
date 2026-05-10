@@ -47,6 +47,8 @@ function mapRequestRow(row: any): SavedRequest {
     responseErrorText: row.responseErrorText,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
+    isIntegrated: row.isIntegrated,
+    integratedAt: row.integratedAt,
   };
 }
 
@@ -180,6 +182,8 @@ export async function createRequest(
       responseErrorText: payload.responseSnapshot?.errorText ?? null,
       createdAt: timestamp,
       updatedAt: timestamp,
+      isIntegrated: payload.isIntegrated ?? false,
+      integratedAt: payload.integratedAt ?? null,
     });
 
     const created = await db.query.requests.findFirst({
@@ -219,6 +223,8 @@ export async function updateRequest(
         responseUrl: payload.responseSnapshot?.url ?? '',
         responseErrorText: payload.responseSnapshot?.errorText ?? null,
         updatedAt: timestamp,
+        isIntegrated: payload.isIntegrated ?? false,
+        integratedAt: payload.integratedAt ?? null,
       })
       .where(eq(requests.id, id))
       .returning();
@@ -230,6 +236,34 @@ export async function updateRequest(
     return mapRequestRow(updated);
   } catch (error: any) {
     throw new Error(error.message || 'Failed to update request');
+  }
+}
+
+export async function toggleRequestIntegrated(
+  id: string,
+  isIntegrated: boolean,
+  integratedAt: string | null,
+): Promise<SavedRequest> {
+  try {
+    const timestamp = nowIso();
+
+    const [updated] = await db
+      .update(requests)
+      .set({
+        isIntegrated,
+        integratedAt,
+        updatedAt: timestamp,
+      })
+      .where(eq(requests.id, id))
+      .returning();
+
+    if (!updated) {
+      throw new Error('Request not found');
+    }
+
+    return mapRequestRow(updated);
+  } catch (error: any) {
+    throw new Error(error.message || 'Failed to toggle integrated status');
   }
 }
 

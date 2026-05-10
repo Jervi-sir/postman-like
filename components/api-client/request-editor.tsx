@@ -10,7 +10,11 @@ import {
 import { generateCurlCommand, parseCurlToDraft } from '@/lib/curl';
 import { toast } from 'sonner';
 import { HugeiconsIcon } from '@hugeicons/react';
-import { MoreHorizontalIcon } from '@hugeicons/core-free-icons';
+import {
+  MoreHorizontalIcon,
+  CheckmarkCircle01Icon,
+  CircleIcon,
+} from '@hugeicons/core-free-icons';
 import { RequestTabEditor } from './key-value-editor';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -73,6 +77,7 @@ type RequestEditorProps = {
   onDelete: () => void;
   onSave: () => void;
   onSend: () => void;
+  onToggleIntegrated: (isIntegrated: boolean) => void;
 };
 
 type CodeTextareaProps = ComponentProps<typeof Textarea>;
@@ -168,6 +173,7 @@ export function RequestEditor({
   onDelete,
   onSave,
   onSend,
+  onToggleIntegrated,
 }: RequestEditorProps) {
   const [isImportOpen, setIsImportOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
@@ -228,12 +234,31 @@ export function RequestEditor({
         <CardHeader className="px-0 pb-4">
           <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
             <div className="space-y-1">
-              <CardTitle>Request Builder</CardTitle>
-              <p className="text-sm text-muted-foreground">
-                Configure the request and run it through the backend proxy.
-              </p>
+              {draft.id && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className={
+                    draft.isIntegrated
+                      ? 'border-green-600/30 bg-green-600/10 text-green-600 hover:bg-green-600/20 hover:text-green-700'
+                      : 'text-muted-foreground'
+                  }
+                  onClick={() => {
+                    onToggleIntegrated(!draft.isIntegrated);
+                  }}
+                >
+                  <HugeiconsIcon
+                    icon={
+                      draft.isIntegrated ? CheckmarkCircle01Icon : CircleIcon
+                    }
+                    className="mr-2 size-4"
+                  />
+                  {draft.isIntegrated ? 'Integrated' : 'Mark as Integrated'}
+                </Button>
+              )}
             </div>
             <div className="flex items-center gap-2">
+
               <Button variant="link" onClick={() => setIsImportOpen(true)}>
                 Import cURL
               </Button>

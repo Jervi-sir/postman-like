@@ -23,6 +23,8 @@ export type SavedRequest = {
   responseErrorText: string | null;
   createdAt: string;
   updatedAt: string;
+  isIntegrated: boolean;
+  integratedAt: string | null;
 };
 
 export type HistoryItem = {
@@ -76,6 +78,8 @@ export type EditorDraft = {
   headersText: string;
   queryText: string;
   bodyText: string;
+  isIntegrated: boolean;
+  integratedAt: string | null;
 };
 
 export type RequestPayload = {
@@ -88,6 +92,8 @@ export type RequestPayload = {
   headers: JsonMap;
   query: JsonMap;
   bodyText: string;
+  isIntegrated?: boolean;
+  integratedAt?: string | null;
   responseSnapshot?: ResponseSnapshot | null;
 };
 

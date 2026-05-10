@@ -24,6 +24,8 @@ const emptyDraftBaseline: EditorDraft = {
   headersText: '{\n  "Content-Type": "application/json"\n}',
   queryText: '{}',
   bodyText: '',
+  isIntegrated: false,
+  integratedAt: null,
 };
 
 function getComparableDraft(draft: EditorDraft) {
@@ -149,6 +151,8 @@ export default function RequestPage() {
           headersText: JSON.stringify(savedRequest.headers, null, 2),
           queryText: JSON.stringify(savedRequest.query, null, 2),
           bodyText: savedRequest.bodyText,
+          isIntegrated: savedRequest.isIntegrated,
+          integratedAt: savedRequest.integratedAt,
         }
       : emptyDraftBaseline;
 
@@ -198,6 +202,9 @@ export default function RequestPage() {
         onSave={() => void handleSave()}
         onDelete={() => void handleDelete()}
         onSend={() => void executeCurrentRequest()}
+        onToggleIntegrated={(isIntegrated) =>
+          void useApiClientStore.getState().toggleIntegratedStatus(id, isIntegrated)
+        }
       />
       <div className="flex flex-1 flex-col lg:flex-row overflow-hidden">
         <ResponsePanel response={response} />

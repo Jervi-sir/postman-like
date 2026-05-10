@@ -13,7 +13,13 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
 import type { HistoryItem, SavedRequest } from '@/types/api';
-import { ArrowLeftDoubleIcon, ChevronsLeft } from '@hugeicons/core-free-icons';
+import {
+  ArrowLeftDoubleIcon,
+  ChevronsLeft,
+  CheckmarkCircle01Icon,
+  CircleIcon,
+} from '@hugeicons/core-free-icons';
+import { HugeiconsIcon } from '@hugeicons/react';
 
 type SidebarProps = {
   requests: SavedRequest[];
@@ -26,6 +32,7 @@ type SidebarProps = {
   onRenameGroup: (currentName: string, nextName: string) => void;
   onSelectHistory: (id: number) => void;
   onSelectRequest: (id: string) => void;
+  onToggleIntegrated: (id: string, isIntegrated: boolean) => void;
 };
 
 type SidebarInfoCardProps = {
@@ -34,7 +41,9 @@ type SidebarInfoCardProps = {
   badge: string;
   badgeVariant?: 'outline' | 'destructive';
   isActive: boolean;
+  isIntegrated?: boolean;
   onClick: () => void;
+  onToggleIntegrated?: (event: React.MouseEvent) => void;
 };
 
 function SidebarInfoCard({
@@ -43,23 +52,47 @@ function SidebarInfoCard({
   badge,
   badgeVariant = 'outline',
   isActive,
+  isIntegrated,
   onClick,
+  onToggleIntegrated,
 }: SidebarInfoCardProps) {
   return (
     <div
       onClick={onClick}
-      className={`w-full rounded-sm border px-2 py-1 text-left transition-colors cursor-pointer ${isActive
+      className={`w-full space-y-0 rounded-sm border px-2 py-1 text-left transition-colors cursor-pointer ${isActive
         ? 'border-primary/40 bg-primary/5'
         : 'border-border bg-background hover:bg-muted/50'
         }`}
     >
       <div className="flex min-w-0 items-center justify-between gap-1">
-        <span className="min-w-0 truncate text-sm font-medium text-foreground">
-          {title}
-        </span>
+        <div className="flex items-center gap-1.5 min-w-0">
+          <span className="min-w-0 truncate text-sm font-medium text-foreground">
+            {title}
+          </span>
+        </div>
         <Badge variant={badgeVariant} className="rounded-sm">{badge}</Badge>
       </div>
-      <p className="mt-1 truncate text-[9px] text-muted-foreground">{subtitle}</p>
+      <div className='flex flex-row items-center justify-between'>
+        <p className="truncate text-[9px] text-muted-foreground">{subtitle}</p>
+        <div className='pr-2.5'>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+              onToggleIntegrated?.(e);
+            }}
+            className={`size-3.5 shrink-0 transition-colors ${isIntegrated
+              ? 'text-green-500'
+              : 'text-muted-foreground/40 hover:text-muted-foreground'
+              }`}
+          >
+            <HugeiconsIcon
+              icon={isIntegrated ? CheckmarkCircle01Icon : CircleIcon}
+              className="size-3"
+            />
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -133,6 +166,7 @@ export function Sidebar({
   onRenameGroup,
   onSelectHistory,
   onSelectRequest,
+  onToggleIntegrated,
 }: SidebarProps) {
   const groupedRequests = useMemo(() => groupRequests(requests), [requests]);
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
@@ -332,21 +366,23 @@ export function Sidebar({
                             </Badge>
                           </CollapsibleTrigger>
                           <CollapsibleContent className="ml-0 space-y-2">
-                             {subGroup.requests.map((request) => (
-                               <Link
-                                 key={request.id}
-                                 href={`/requests/${request.id}`}
-                                 className="block"
-                               >
-                                 <SidebarInfoCard
-                                   title={request.name}
-                                   subtitle={request.url}
-                                   badge={request.method}
-                                   isActive={request.id === activeRequestId}
-                                   onClick={() => onSelectRequest(request.id)}
-                                 />
-                               </Link>
-                             ))}
+                            {subGroup.requests.map((request) => (
+                              <Link
+                                key={request.id}
+                                href={`/requests/${request.id}`}
+                                className="block"
+                              >
+                                <SidebarInfoCard
+                                  title={request.name}
+                                  subtitle={request.url}
+                                  badge={request.method}
+                                  isActive={request.id === activeRequestId}
+                                  isIntegrated={request.isIntegrated}
+                                  onClick={() => onSelectRequest(request.id)}
+                                  onToggleIntegrated={() => onToggleIntegrated(request.id, !request.isIntegrated)}
+                                />
+                              </Link>
+                            ))}
                           </CollapsibleContent>
                         </Collapsible>
                       ) : (
@@ -365,7 +401,9 @@ export function Sidebar({
                                 subtitle={request.url}
                                 badge={request.method}
                                 isActive={request.id === activeRequestId}
+                                isIntegrated={request.isIntegrated}
                                 onClick={() => onSelectRequest(request.id)}
+                                onToggleIntegrated={() => onToggleIntegrated(request.id, !request.isIntegrated)}
                               />
                             </Link>
                           ))}

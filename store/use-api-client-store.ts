@@ -45,6 +45,7 @@ type ApiClientState = {
   deleteComment: (id: number) => Promise<void>;
   clearHistory: () => Promise<void>;
   executeCurrentRequest: () => Promise<void>;
+  toggleIntegratedStatus: (requestId: string, isIntegrated: boolean) => Promise<void>;
 };
 
 const localVariablesStorageKey = 'api-client-local-settings';
@@ -69,6 +70,8 @@ const defaultDraft: EditorDraft = {
   headersText: '{\n  "Content-Type": "application/json"\n}',
   queryText: '{}',
   bodyText: '',
+  isIntegrated: false,
+  integratedAt: null,
 };
 
 function toDraft(savedRequest: SavedRequest): EditorDraft {
@@ -82,6 +85,8 @@ function toDraft(savedRequest: SavedRequest): EditorDraft {
     headersText: stringifyJson(savedRequest.headers),
     queryText: stringifyJson(savedRequest.query),
     bodyText: savedRequest.bodyText,
+    isIntegrated: savedRequest.isIntegrated,
+    integratedAt: savedRequest.integratedAt,
   };
 }
 
@@ -187,6 +192,8 @@ function toRequestPayload(draft: EditorDraft): RequestPayload {
     headers: parseJsonObject(draft.headersText, 'Headers'),
     query: parseJsonObject(draft.queryText, 'Query params'),
     bodyText: draft.bodyText,
+    isIntegrated: draft.isIntegrated,
+    integratedAt: draft.integratedAt,
   };
 }
 
@@ -618,6 +625,44 @@ export const useApiClientStore = create<ApiClientState>()((set, get) => ({
       }));
     } finally {
       set({ isExecuting: false });
+    }
+  },
+  toggleIntegratedStatus: async (requestId, isIntegrated) => {
+    const integratedAt = isIntegrated ? new Date().toISOString() : null;
+
+    // Optimistic update
+    set((state) => ({
+      requests: state.requests.map((r) =>
+        r.id === requestId ? { ...r, isIntegrated, integratedAt } : r
+      ),
+      draft:
+        state.draft.id === requestId
+          ? { ...state.draft, isIntegrated, integratedAt }
+          : state.draft,
+    }));
+
+    try {
+      await apiClient.toggleIntegrated(requestId, isIntegrated, integratedAt);
+    } catch (error) {
+      // Revert on error
+      const originalRequest = get().requests.find((r) => r.id === requestId);
+      if (originalRequest) {
+        set((state) => ({
+          requests: state.requests.map((r) =>
+            r.id === requestId ? originalRequest : r
+          ),
+          draft:
+            state.draft.id === requestId
+              ? toDraft(originalRequest)
+              : state.draft,
+        }));
+      }
+      set({
+        editorError:
+          error instanceof Error
+            ? error.message
+            : 'Failed to update integrated status',
+      });
     }
   },
 }));

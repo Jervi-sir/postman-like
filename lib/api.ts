@@ -42,6 +42,14 @@ export const apiClient = {
     });
     return handleResponse<SavedRequest>(res);
   },
+  
+  toggleIntegrated: async (id: string, isIntegrated: boolean, integratedAt: string | null): Promise<SavedRequest> => {
+    const res = await fetch(`/api/requests/${id}/integrated`, {
+      method: 'POST',
+      body: JSON.stringify({ isIntegrated, integratedAt }),
+    });
+    return handleResponse<SavedRequest>(res);
+  },
 
   renameGroup: async (currentName: string, nextName: string): Promise<SavedRequest[]> => {
     const res = await fetch('/api/requests/rename-group', {
