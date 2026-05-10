@@ -238,13 +238,6 @@ export function RequestEditor({
                 Import cURL
               </Button>
               <Button
-                variant="ghost"
-                className="text-xs font-medium text-muted-foreground h-9"
-                onClick={handleCopyCurl}
-              >
-                Copy as cURL
-              </Button>
-              <Button
                 variant="outline"
                 onClick={onSave}
                 disabled={isSaving || !hasChanges}
@@ -415,7 +408,13 @@ export function RequestEditor({
             </TabsList>
             <TabsContent value="headers">
               <RequestTabEditor
-                value={draft.headersText}
+                value={
+                  !draft.headersText ||
+                    draft.headersText === '{}' ||
+                    draft.headersText.trim() === ''
+                    ? '{\n  "Content-Type": "application/json"\n}'
+                    : draft.headersText
+                }
                 onChange={(value) => onChange({ headersText: value })}
                 EditorComponent={CodeTextarea}
                 placeholder='{"Content-Type":"application/json"}'
@@ -451,14 +450,23 @@ export function RequestEditor({
               </p>
             </TabsContent>
           </Tabs>
-          <Button
-            variant="outline"
-            className="h-10 w-full border-border bg-background text-foreground transition-all hover:-translate-y-0.5 hover:border-primary hover:bg-primary hover:text-primary hover:shadow-md cursor-pointer"
-            onClick={onSend}
-            disabled={isExecuting}
-          >
-            {isExecuting ? 'Sending...' : 'Send Request'}
-          </Button>
+          <div className='flex flex-row gap-4'>
+            <Button
+              variant="outline"
+              className="h-10 flex-1 border-border bg-background text-foreground transition-all hover:-translate-y-0.5 hover:border-primary hover:bg-primary hover:text-primary hover:shadow-md cursor-pointer"
+              onClick={onSend}
+              disabled={isExecuting}
+            >
+              {isExecuting ? 'Sending...' : 'Send Request'}
+            </Button>
+            <Button
+              variant="outline"
+              className="h-10 text-xs font-medium text-muted-foreground"
+              onClick={handleCopyCurl}
+            >
+              Copy as cURL
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </div>

@@ -66,7 +66,7 @@ const defaultDraft: EditorDraft = {
   subGroupName: '',
   method: 'GET',
   url: '',
-  headersText: '{}',
+  headersText: '{\n  "Content-Type": "application/json"\n}',
   queryText: '{}',
   bodyText: '',
 };

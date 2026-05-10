@@ -10,9 +10,11 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { HugeiconsIcon } from '@hugeicons/react';
-import { Delete02Icon, Add01Icon, CodeIcon, Table02Icon } from '@hugeicons/core-free-icons';
+import { Delete02Icon, Add01Icon } from '@hugeicons/core-free-icons';
 import { Checkbox } from '@/components/ui/checkbox';
 import { cn } from '@/lib/utils';
+import { EditorTabSwitcher, type TabType } from './editor-tab-switcher';
+
 
 export type KeyValueRow = {
   id: string;
@@ -63,8 +65,8 @@ export function KeyValueTable({ rows, onChange }: KeyValueTableProps) {
         </TableHeader>
         <TableBody>
           {rows.map((row) => (
-            <TableRow 
-              key={row.id} 
+            <TableRow
+              key={row.id}
               className={cn(
                 "group border-b border-border/40 last:border-0 transition-opacity",
                 !row.enabled && "opacity-60 bg-muted/[0.01]"
@@ -138,7 +140,7 @@ export function KeyValueTable({ rows, onChange }: KeyValueTableProps) {
   );
 }
 
-type TabType = 'json' | 'table';
+
 
 type RequestTabEditorProps = {
   value: string;
@@ -162,7 +164,7 @@ export function RequestTabEditor({
       const obj = JSON.parse(value || '{}');
       if (typeof obj !== 'object' || obj === null || Array.isArray(obj))
         return { rows: [], isValidJson: false };
-      
+
       const parsedRows = Object.entries(obj).map(([key, val], index) => {
         const isDisabled = key.startsWith('//');
         const cleanKey = isDisabled ? key.slice(2) : key;
@@ -173,7 +175,7 @@ export function RequestTabEditor({
           enabled: !isDisabled,
         };
       });
-      
+
       return { rows: parsedRows, isValidJson: true };
     } catch {
       return { rows: [], isValidJson: false };
@@ -187,19 +189,19 @@ export function RequestTabEditor({
       if (!trimmedKey) return;
 
       const finalKey = row.enabled ? trimmedKey : `//${trimmedKey}`;
-      
+
       try {
         const trimmedValue = row.value.trim();
         if ((trimmedValue.startsWith('{') && trimmedValue.endsWith('}')) || (trimmedValue.startsWith('[') && trimmedValue.endsWith(']'))) {
-           obj[finalKey] = JSON.parse(row.value);
+          obj[finalKey] = JSON.parse(row.value);
         } else if (trimmedValue === 'true') {
-           obj[finalKey] = true;
+          obj[finalKey] = true;
         } else if (trimmedValue === 'false') {
-           obj[finalKey] = false;
+          obj[finalKey] = false;
         } else if (!isNaN(Number(trimmedValue)) && trimmedValue !== '') {
-           obj[finalKey] = Number(trimmedValue);
+          obj[finalKey] = Number(trimmedValue);
         } else {
-           obj[finalKey] = row.value;
+          obj[finalKey] = row.value;
         }
       } catch {
         obj[finalKey] = row.value;
@@ -216,35 +218,11 @@ export function RequestTabEditor({
 
   return (
     <div className={cn("space-y-3", className)}>
-      <div className="flex items-center justify-between">
-        <div className="flex bg-muted/50 p-1 rounded-lg border border-border/40">
-          <Button
-            variant={activeTab === 'json' ? 'secondary' : 'ghost'}
-            size="sm"
-            className={cn(
-              "h-7 px-3 text-[11px] gap-1.5 transition-all",
-              activeTab === 'json' ? "shadow-sm bg-background" : "text-muted-foreground"
-            )}
-            onClick={() => setActiveTab('json')}
-          >
-            <HugeiconsIcon icon={CodeIcon} className="size-3" />
-            JSON
-          </Button>
-          <Button
-            variant={activeTab === 'table' ? 'secondary' : 'ghost'}
-            size="sm"
-            disabled={!isValidJson}
-            className={cn(
-              "h-7 px-3 text-[11px] gap-1.5 transition-all",
-              activeTab === 'table' ? "shadow-sm bg-background" : "text-muted-foreground"
-            )}
-            onClick={() => setActiveTab('table')}
-          >
-            <HugeiconsIcon icon={Table02Icon} className="size-3" />
-            Table
-          </Button>
-        </div>
-      </div>
+      <EditorTabSwitcher
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        isValidJson={isValidJson}
+      />
 
       {activeTab === 'json' ? (
         <EditorComponent
