@@ -93,6 +93,41 @@ export function parseDsl(
     });
   }
 
+  // Handle Enums
+  const enumRegex = /enum\s+(\w+)\s*{([^}]*)}/gi;
+  while ((match = enumRegex.exec(cleanCode)) !== null) {
+    const enumName = match[1];
+    const body = match[2];
+    const enumId = `enum-${enumName.toLowerCase()}`;
+
+    const values = body
+      .split("\n")
+      .map((l) => l.trim())
+      .filter((l) => l.length > 0);
+    
+    const columns: Column[] = values.map((val, idx) => ({
+      id: `${enumId}-${idx}`,
+      name: val,
+      type: 'val',
+    }));
+
+    const position = existingPositions.get(enumName.toLowerCase()) || {
+      x: Math.random() * 400,
+      y: Math.random() * 400,
+    };
+
+    nodes.push({
+      id: enumId,
+      type: "table", // Reuse table node for now, or we could add 'enum' type
+      position,
+      data: {
+        label: enumName,
+        isEnum: true, // Tag it as enum
+        columns,
+      },
+    });
+  }
+
   return { nodes, edges };
 }
 
@@ -100,8 +135,8 @@ export function parseDsl(
  * Converts nodes and edges back to DSL code.
  */
 export function generateDsl(nodes: Node[], edges: Edge[]): string {
-  return nodes
-    .filter((n) => n.type === 'table')
+  const tableDsl = nodes
+    .filter((n) => n.type === 'table' && !(n.data as TableNodeData).isEnum)
     .map((node) => {
       const data = node.data as TableNodeData;
       const colLines = data.columns.map((col) => {
@@ -111,12 +146,9 @@ export function generateDsl(nodes: Node[], edges: Edge[]): string {
         // Find if this column is a source of any edge
         const outboundEdge = edges.find(e => e.source === node.id && e.sourceHandle === `${col.id}-right`);
         if (outboundEdge) {
-          // target is like "table-users" -> we want "users"
-          // targetHandle is like "table-users-id-left" -> we want "id"
           const targetTableNode = nodes.find(n => n.id === outboundEdge.target);
           if (targetTableNode) {
             const targetTableName = (targetTableNode.data as TableNodeData).label;
-            // Extract col name from targetHandle: table-name-colname-left
             const targetData = targetTableNode.data as TableNodeData;
             const targetCol = targetData.columns.find(c => `${c.id}-left` === outboundEdge.targetHandle);
             if (targetCol) {
@@ -130,4 +162,15 @@ export function generateDsl(nodes: Node[], edges: Edge[]): string {
       return `table ${data.label} {\n${colLines.join("\n")}\n}`;
     })
     .join("\n\n");
+
+  const enumDsl = nodes
+    .filter((n) => n.type === 'table' && (n.data as TableNodeData).isEnum)
+    .map((node) => {
+      const data = node.data as TableNodeData;
+      const values = data.columns.map(c => `  ${c.name}`).join("\n");
+      return `enum ${data.label} {\n${values}\n}`;
+    })
+    .join("\n\n");
+
+  return [tableDsl, enumDsl].filter(Boolean).join("\n\n");
 }

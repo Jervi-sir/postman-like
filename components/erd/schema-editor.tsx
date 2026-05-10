@@ -10,7 +10,7 @@ import { Code2, Play, Info } from 'lucide-react';
 // Define custom language for ERD DSL
 const erdDsl = {
   'comment': /\/\/.*|#.*/,
-  'keyword': /\btable\b|\bpk\b|\bfk\b/,
+  'keyword': /\btable\b|\bpk\b|\bfk\b|\benum\b/,
   'function': /\b(uuid|text|int|integer|boolean|timestamp|date|jsonb|varchar|serial)\b/,
   'punctuation': /[{}.]/,
   'string': {
@@ -66,6 +66,8 @@ export function SchemaEditor({ code, onChange, onApply }: SchemaEditorProps) {
           </div>
           <p>
             Write <b>table roles {"{ id uuid pk }"}</b>. Use <b>fk table.col</b> for relationships. Existing table positions are preserved.
+            <br />
+            Define enums: <b>enum status {"{ active inactive }"}</b>.
           </p>
         </div>
         
@@ -81,7 +83,7 @@ export function SchemaEditor({ code, onChange, onApply }: SchemaEditorProps) {
           <div className="flex items-center gap-2">
             <span className="text-[9px] font-bold uppercase tracking-tighter opacity-40 w-10">Keywords</span>
             <div className="flex flex-wrap gap-1">
-              {['table', 'pk', 'fk'].map(k => (
+              {['table', 'enum', 'pk', 'fk'].map(k => (
                 <code key={k} className="px-1 py-0.5 bg-primary/10 text-primary/80 rounded text-[9px] font-bold">{k}</code>
               ))}
             </div>

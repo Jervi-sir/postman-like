@@ -2,7 +2,7 @@
 
 import React, { memo } from 'react';
 import { NodeProps, Position } from '@xyflow/react';
-import { Table, Hash, Key, Plus, MoreHorizontal, Edit2, Trash2 } from 'lucide-react';
+import { Table, Hash, Key, Plus, MoreHorizontal, Edit2, Trash2, List } from 'lucide-react';
 import { 
   DatabaseSchemaNode, 
   DatabaseSchemaNodeBody,
@@ -25,6 +25,7 @@ export type Column = {
 
 export type TableNodeData = {
   label: string;
+  isEnum?: boolean;
   columns: Column[];
   onAddColumn?: (nodeId: string) => void;
   onEditColumn?: (nodeId: string, column: Column) => void;
@@ -34,17 +35,32 @@ export type TableNodeData = {
 };
 
 const TableNode = ({ id, data, selected }: NodeProps & { data: TableNodeData }) => {
+  const isEnum = data.isEnum;
+
   return (
-    <DatabaseSchemaNode className={cn("min-w-[260px] shadow-xl group/node", selected && "ring-2 ring-primary border-primary")}>
-      <BaseNodeHeader className="bg-secondary/50 backdrop-blur-sm border-b rounded-t-md px-3 py-2.5">
+    <DatabaseSchemaNode className={cn(
+      "min-w-[260px] shadow-xl group/node", 
+      selected && "ring-2 ring-primary border-primary",
+      isEnum && "border-amber-500/50"
+    )}>
+      <BaseNodeHeader className={cn(
+        "bg-secondary/50 backdrop-blur-sm border-b rounded-t-md px-3 py-2.5",
+        isEnum && "bg-amber-500/10 border-amber-500/20"
+      )}>
         <div className="flex items-center gap-2.5 overflow-hidden">
-          <div className="p-1.5 bg-background rounded-md border shadow-sm shrink-0 text-primary">
-            <Table size={13} />
+          <div className={cn(
+            "p-1.5 bg-background rounded-md border shadow-sm shrink-0",
+            isEnum ? "text-amber-500" : "text-primary"
+          )}>
+            {isEnum ? <List size={13} /> : <Table size={13} />}
           </div>
           <div className="flex items-center gap-2 min-w-0">
             <BaseNodeHeaderTitle className="text-sm font-bold text-foreground tracking-tight truncate">
               {data.label}
             </BaseNodeHeaderTitle>
+            {isEnum && (
+              <span className="text-[8px] font-black bg-amber-500/20 text-amber-600 px-1 rounded">ENUM</span>
+            )}
             <Button 
               variant="ghost" 
               size="icon" 
@@ -77,21 +93,25 @@ const TableNode = ({ id, data, selected }: NodeProps & { data: TableNodeData }) 
                 position={Position.Left}
                 title={column.name}
                 className="py-2 px-3"
-                labelClassName="font-semibold text-xs text-foreground/90"
+                labelClassName={cn("font-semibold text-xs text-foreground/90", isEnum && "italic text-amber-600/80")}
                 handleClassName="!-left-[6px] opacity-0 group-hover/row:opacity-100 transition-opacity"
               />
             </DatabaseSchemaTableCell>
-            <DatabaseSchemaTableCell className="text-right pr-2">
-              <span className="text-[10px] uppercase font-bold text-muted-foreground/40 tracking-wider">
-                {column.type}
-              </span>
-            </DatabaseSchemaTableCell>
-            <DatabaseSchemaTableCell className="w-20 p-0 pr-3">
+            {!isEnum && (
+              <DatabaseSchemaTableCell className="text-right pr-2">
+                <span className="text-[10px] uppercase font-bold text-muted-foreground/40 tracking-wider">
+                  {column.type}
+                </span>
+              </DatabaseSchemaTableCell>
+            )}
+            <DatabaseSchemaTableCell className={cn("p-0 pr-3", isEnum ? "w-10" : "w-20")}>
               <div className="flex items-center justify-end gap-1 relative h-full">
-                <div className="flex items-center gap-1 mr-1">
-                  {column.isPrimary && <Key size={10} className="text-amber-500 shrink-0" />}
-                  {column.isForeignKey && <Hash size={10} className="text-blue-500 shrink-0" />}
-                </div>
+                {!isEnum && (
+                  <div className="flex items-center gap-1 mr-1">
+                    {column.isPrimary && <Key size={10} className="text-amber-500 shrink-0" />}
+                    {column.isForeignKey && <Hash size={10} className="text-blue-500 shrink-0" />}
+                  </div>
+                )}
                 
                 {/* Column Actions */}
                 <div className="flex items-center opacity-0 group-hover/row:opacity-100 transition-opacity">
@@ -113,12 +133,14 @@ const TableNode = ({ id, data, selected }: NodeProps & { data: TableNodeData }) 
                   </Button>
                 </div>
 
-                <BaseHandle
-                  id={`${column.id}-right`}
-                  type="source"
-                  position={Position.Right}
-                  className="!-right-[6px] opacity-0 group-hover/row:opacity-100 transition-opacity"
-                />
+                {!isEnum && (
+                  <BaseHandle
+                    id={`${column.id}-right`}
+                    type="source"
+                    position={Position.Right}
+                    className="!-right-[6px] opacity-0 group-hover/row:opacity-100 transition-opacity"
+                  />
+                )}
               </div>
             </DatabaseSchemaTableCell>
           </DatabaseSchemaTableRow>
@@ -132,7 +154,7 @@ const TableNode = ({ id, data, selected }: NodeProps & { data: TableNodeData }) 
           className="w-full py-1.5 rounded-md border border-dashed border-muted-foreground/20 text-[10px] font-bold text-muted-foreground/60 hover:text-primary hover:border-primary/40 hover:bg-primary/5 transition-all flex items-center justify-center gap-1.5 uppercase tracking-widest"
         >
           <Plus size={10} />
-          Add Column
+          {isEnum ? 'Add Value' : 'Add Column'}
         </button>
       </div>
     </DatabaseSchemaNode>
