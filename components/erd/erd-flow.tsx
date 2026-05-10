@@ -99,6 +99,15 @@ function ErdFlowContent({
     return () => clearTimeout(timer);
   }, [nodes, edges, diagramId, handleSave]);
 
+  // Keyboard shortcut listener
+  useEffect(() => {
+    const handleShortcut = () => {
+      handleSave(false);
+    };
+    window.addEventListener('erd-save-shortcut', handleShortcut);
+    return () => window.removeEventListener('erd-save-shortcut', handleShortcut);
+  }, [handleSave]);
+
   // Update nodes/edges when initial props change (e.g. switching diagrams)
   useEffect(() => {
     setNodes(initialNodes);
