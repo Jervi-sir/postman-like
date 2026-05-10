@@ -184,6 +184,7 @@ export function parseCurlToDraft(command: string): EditorDraft {
     bodyText,
     isIntegrated: false,
     integratedAt: null,
+    description: '',
   };
 }
 

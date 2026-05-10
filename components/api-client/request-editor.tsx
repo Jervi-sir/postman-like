@@ -87,7 +87,16 @@ type RequestEditorProps = {
   onSaveDescription: (description: string) => void;
 };
 
-type CodeTextareaProps = ComponentProps<typeof Textarea>;
+type CodeTextareaProps = {
+  className?: string;
+  value?: string | number | readonly string[];
+  onChange?: (e: { target: { value: string }; currentTarget: { value: string } }) => void;
+  onKeyDown?: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
+  placeholder?: string;
+  spellCheck?: boolean;
+  autoCapitalize?: string;
+  autoCorrect?: string;
+};
 
 function CodeTextarea({
   className,
@@ -150,7 +159,7 @@ function CodeTextarea({
         </div>
         <div className="flex-1 overflow-auto">
           <Editor
-            value={value ?? ''}
+            value={String(value ?? '')}
             onValueChange={(code) => {
               onChange?.({
                 target: { value: code },
@@ -159,7 +168,7 @@ function CodeTextarea({
             }}
             highlight={(code) => highlight(code, languages.json || languages.javascript, 'json')}
             padding={12}
-            onScroll={(e: any) => {
+            onScroll={(e) => {
               if (gutterRef.current) {
                 gutterRef.current.scrollTop = e.currentTarget.scrollTop;
               }
@@ -171,7 +180,7 @@ function CodeTextarea({
               backgroundColor: 'transparent',
             }}
             className={className}
-            {...props}
+            {...(props as any)}
           />
         </div>
       </div>

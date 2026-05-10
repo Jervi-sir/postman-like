@@ -86,6 +86,7 @@ export default function TiptapEditor({ value, onChange, placeholder }: TiptapEdi
           shouldShow={({ state, from, to }) => {
             return from !== to && !state.selection.empty;
           }}
+          // @ts-ignore
           tippyOptions={{ duration: 100 }}
           className="flex items-center gap-1 p-1 bg-popover border border-border rounded-lg shadow-xl backdrop-blur-md z-50"
         >
@@ -146,6 +147,7 @@ export default function TiptapEditor({ value, onChange, placeholder }: TiptapEdi
             const { $from } = selection;
             return selection.empty && $from.parent.content.size === 0 && $from.parent.type.name === 'paragraph';
           }}
+          // @ts-ignore
           tippyOptions={{ duration: 100 }}
           className="flex flex-col gap-1 p-1 bg-popover border border-border rounded-xl shadow-2xl min-w-[200px] overflow-hidden z-50 animate-in fade-in zoom-in duration-200"
         >
