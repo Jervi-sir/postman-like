@@ -60,13 +60,32 @@ export function SchemaEditor({ code, onChange, onApply }: SchemaEditorProps) {
       </div>
 
       <div className="p-4 border-t bg-muted/30 border-primary/5">
-        <div className="flex items-start gap-3 text-[10px] text-muted-foreground/70 leading-relaxed">
+        <div className="flex items-start gap-3 text-[10px] text-muted-foreground/70 leading-relaxed mb-3">
           <div className="p-1.5 bg-blue-500/10 rounded-full shrink-0">
             <Info size={12} className="text-blue-500" />
           </div>
           <p>
             Write <b>table roles {"{ id uuid pk }"}</b>. Use <b>fk table.col</b> for relationships. Existing table positions are preserved.
           </p>
+        </div>
+        
+        <div className="space-y-2 pt-2 border-t border-primary/5">
+          <div className="flex items-center gap-2">
+            <span className="text-[9px] font-bold uppercase tracking-tighter opacity-40 w-10">Types</span>
+            <div className="flex flex-wrap gap-1">
+              {['uuid', 'text', 'int', 'integer', 'boolean', 'timestamp', 'date', 'jsonb', 'varchar', 'serial'].map(t => (
+                <code key={t} className="px-1 py-0.5 bg-secondary/40 rounded text-[9px] text-muted-foreground">{t}</code>
+              ))}
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-[9px] font-bold uppercase tracking-tighter opacity-40 w-10">Keywords</span>
+            <div className="flex flex-wrap gap-1">
+              {['table', 'pk', 'fk'].map(k => (
+                <code key={k} className="px-1 py-0.5 bg-primary/10 text-primary/80 rounded text-[9px] font-bold">{k}</code>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
 

@@ -71,7 +71,7 @@ function ErdFlowContent({
   const handleSave = useCallback(async (isAutosave = false) => {
     if (!diagramId) return;
     if (!isAutosave) setSaving(true);
-    
+
     try {
       const viewport = getViewport();
       // We use the functional updates or refs if we were in a timer, 
@@ -89,15 +89,15 @@ function ErdFlowContent({
   }, [diagramId, getViewport, nodes, edges, onSave]);
 
   // Autosave logic
-  useEffect(() => {
-    if (!diagramId || nodes.length === 0) return;
+  // useEffect(() => {
+  //   if (!diagramId || nodes.length === 0) return;
 
-    const timer = setTimeout(() => {
-      handleSave(true);
-    }, 5000);
+  //   const timer = setTimeout(() => {
+  //     handleSave(true);
+  //   }, 5000);
 
-    return () => clearTimeout(timer);
-  }, [nodes, edges, diagramId, handleSave]);
+  //   return () => clearTimeout(timer);
+  // }, [nodes, edges, diagramId, handleSave]);
 
   // Keyboard shortcut listener
   useEffect(() => {
@@ -201,7 +201,7 @@ function ErdFlowContent({
         return node;
       })
     );
-    setEdges((eds) => eds.filter((edge) => 
+    setEdges((eds) => eds.filter((edge) =>
       !edge.sourceHandle?.startsWith(columnId) && !edge.targetHandle?.startsWith(columnId)
     ));
   }, []);
@@ -221,7 +221,7 @@ function ErdFlowContent({
             ...node,
             data: {
               ...node.data,
-              columns: (node.data as TableNodeData).columns.map((c) => 
+              columns: (node.data as TableNodeData).columns.map((c) =>
                 c.id === editFormData.id ? editFormData : c
               )
             }
@@ -383,17 +383,17 @@ function ErdFlowContent({
               </div>
               <div className="flex items-center gap-6 pl-[100px]">
                 <div className="flex items-center space-x-2">
-                  <Checkbox 
-                    id="primary" 
-                    checked={editFormData.isPrimary} 
+                  <Checkbox
+                    id="primary"
+                    checked={editFormData.isPrimary}
                     onCheckedChange={(checked) => setEditFormData({ ...editFormData, isPrimary: !!checked })}
                   />
                   <Label htmlFor="primary" className="text-[10px] uppercase font-bold tracking-wider">Primary</Label>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <Checkbox 
-                    id="foreign" 
-                    checked={editFormData.isForeignKey} 
+                  <Checkbox
+                    id="foreign"
+                    checked={editFormData.isForeignKey}
                     onCheckedChange={(checked) => setEditFormData({ ...editFormData, isForeignKey: !!checked })}
                   />
                   <Label htmlFor="foreign" className="text-[10px] uppercase font-bold tracking-wider">Foreign</Label>
