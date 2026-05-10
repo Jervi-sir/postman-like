@@ -14,13 +14,14 @@ import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
 import type { HistoryItem, SavedRequest } from '@/types/api';
 import {
-  ArrowLeftDoubleIcon,
-  ChevronsLeft,
   CheckmarkCircle01Icon,
   CircleIcon,
   Notebook01Icon,
+  Database01Icon,
 } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
+import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 type SidebarProps = {
   requests: SavedRequest[];
@@ -45,6 +46,7 @@ type SidebarInfoCardProps = {
   isIntegrated?: boolean;
   onClick: () => void;
   onToggleIntegrated?: (event: React.MouseEvent) => void;
+  isCollapsed?: boolean;
 };
 
 function SidebarInfoCard({
@@ -56,7 +58,23 @@ function SidebarInfoCard({
   isIntegrated,
   onClick,
   onToggleIntegrated,
+  isCollapsed = false,
 }: SidebarInfoCardProps) {
+  if (isCollapsed) {
+    return (
+      <div
+        onClick={onClick}
+        title={`${title} (${badge})`}
+        className={cn(
+          "flex h-9 w-9 items-center justify-center rounded-md border transition-colors cursor-pointer",
+          isActive ? 'border-primary/40 bg-primary/5' : 'border-border bg-background hover:bg-muted/50'
+        )}
+      >
+        <span className="text-[10px] font-bold uppercase">{badge.substring(0, 3)}</span>
+      </div>
+    );
+  }
+
   return (
     <div
       onClick={onClick}
@@ -119,14 +137,8 @@ function groupRequests(requests: SavedRequest[]) {
 
   return [...grouped.entries()]
     .sort(([left], [right]) => {
-      if (!left) {
-        return 1;
-      }
-
-      if (!right) {
-        return -1;
-      }
-
+      if (!left) return 1;
+      if (!right) return -1;
       return left.localeCompare(right);
     })
     .map(([name, subGroups]) => ({
@@ -149,10 +161,7 @@ function groupRequests(requests: SavedRequest[]) {
 }
 
 function formatHistoryStatus(statusCode: number | null) {
-  if (statusCode === null) {
-    return 'ERR';
-  }
-
+  if (statusCode === null) return 'ERR';
   return String(statusCode);
 }
 
@@ -169,14 +178,28 @@ export function Sidebar({
   onSelectRequest,
   onToggleIntegrated,
 }: SidebarProps) {
-  const groupedRequests = useMemo(() => groupRequests(requests), [requests]);
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
-  const [openSubGroups, setOpenSubGroups] = useState<Record<string, boolean>>(
-    {},
-  );
+  const [openSubGroups, setOpenSubGroups] = useState<Record<string, boolean>>({});
   const [isHistoryOpen, setIsHistoryOpen] = useState(true);
   const [editingGroup, setEditingGroup] = useState<string | null>(null);
   const [groupNameInput, setGroupNameInput] = useState('');
+
+  // Load state from localStorage on mount
+  useEffect(() => {
+    const saved = localStorage.getItem('main-sidebar-collapsed');
+    if (saved !== null) {
+      setIsCollapsed(saved === 'true');
+    }
+  }, []);
+
+  const toggleCollapse = () => {
+    const newState = !isCollapsed;
+    setIsCollapsed(newState);
+    localStorage.setItem('main-sidebar-collapsed', String(newState));
+  };
+
+  const groupedRequests = useMemo(() => groupRequests(requests), [requests]);
 
   useEffect(() => {
     if (
@@ -189,22 +212,12 @@ export function Sidebar({
   }, [editingGroup, groupedRequests]);
 
   function handleGroupToggle(groupName: string, isOpen: boolean) {
-    setOpenGroups((current) => ({
-      ...current,
-      [groupName]: isOpen,
-    }));
+    setOpenGroups((current) => ({ ...current, [groupName]: isOpen }));
   }
 
-  function handleSubGroupToggle(
-    groupName: string,
-    subGroupName: string,
-    isOpen: boolean,
-  ) {
+  function handleSubGroupToggle(groupName: string, subGroupName: string, isOpen: boolean) {
     const key = `${groupName}::${subGroupName}`;
-    setOpenSubGroups((current) => ({
-      ...current,
-      [key]: isOpen,
-    }));
+    setOpenSubGroups((current) => ({ ...current, [key]: isOpen }));
   }
 
   function startEditingGroup(groupName: string) {
@@ -223,262 +236,174 @@ export function Sidebar({
   }
 
   return (
-    <aside className="flex w-full shrink-0 flex-col border-b border-border bg-card lg:w-[260px] lg:basis-[260px] lg:max-w-[260px] lg:border-r lg:border-b-0">
-      <div className="flex items-center justify-between px-4 py-4">
-        <div>
-          <p className="text-sm font-semibold text-foreground">API Client</p>
-          <p className="text-xs text-muted-foreground">
-            Internal request runner
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
+    <aside className={cn(
+      "flex w-full shrink-0 flex-col border-b border-border bg-card transition-all duration-300 relative lg:border-r lg:border-b-0",
+      isCollapsed ? "lg:w-16 lg:basis-16 lg:max-w-16" : "lg:w-[260px] lg:basis-[260px] lg:max-w-[260px]"
+    )}>
+      {/* Toggle Button */}
+      <Button
+        variant="ghost"
+        size="icon"
+        className="hidden lg:flex absolute -right-3 top-20 h-6 w-6 rounded-full border bg-background shadow-sm z-10 hover:bg-muted"
+        onClick={toggleCollapse}
+      >
+        {isCollapsed ? <ChevronRight size={12} /> : <ChevronLeft size={12} />}
+      </Button>
+
+      <div className={cn(
+        "flex items-center justify-between px-4 py-4 transition-all overflow-hidden",
+        isCollapsed ? "justify-center px-2" : ""
+      )}>
+        {!isCollapsed && (
+          <div>
+            <p className="text-sm font-semibold text-foreground whitespace-nowrap">API Client</p>
+            <p className="text-xs text-muted-foreground whitespace-nowrap">Internal runner</p>
+          </div>
+        )}
+        <div className={cn("flex items-center gap-2", isCollapsed && "flex-col")}>
           <ModeToggle />
-          <Button size="sm" onClick={onNewRequest}>
-            New Request
+          <Button size="sm" onClick={onNewRequest} className={cn(isCollapsed && "h-8 w-8 p-0")}>
+            {isCollapsed ? <Plus size={16} /> : "New"}
           </Button>
         </div>
       </div>
       <Separator />
-      <div className="px-4 py-2">
-        <Link href="/notes">
-          <Button variant="ghost" className="w-full justify-start gap-2 h-9 text-xs font-medium" size="sm">
-            <HugeiconsIcon icon={Notebook01Icon} className="size-4" />
-            Notion Notes
+
+      <div className={cn("px-4 py-2 flex flex-col gap-2 overflow-hidden", isCollapsed && "items-center px-1")}>
+        <Link href="/notes" title="Notion Notes">
+          <Button variant="ghost" className={cn("w-full justify-start gap-2 h-9 text-xs font-medium", isCollapsed && "justify-center p-0")} size="sm">
+            <HugeiconsIcon icon={Notebook01Icon} className="size-4 shrink-0" />
+            {!isCollapsed && "Notes"}
+          </Button>
+        </Link>
+        <Link href="/erd" title="ER Diagrams">
+          <Button variant="ghost" className={cn("w-full justify-start gap-2 h-9 text-xs font-medium", isCollapsed && "justify-center p-0")} size="sm">
+            <HugeiconsIcon icon={Database01Icon} className="size-4 shrink-0" />
+            {!isCollapsed && "ERD"}
           </Button>
         </Link>
       </div>
       <Separator />
-      <ScrollArea className="h-[40vh] lg:h-[calc(100vh-73px)]">
-        <div className="space-y-2 p-4">
-          <section className="space-y-3">
-            <div className="flex items-center justify-between">
-              <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                Saved Requests
-              </p>
-              <Badge variant="outline">{requests.length}</Badge>
-            </div>
-            <div className="space-y-2">
-              {isLoading && (
-                <p className="text-xs text-muted-foreground">
-                  Loading requests...
-                </p>
-              )}
-              {!isLoading && requests.length === 0 && (
-                <p className="text-xs text-muted-foreground">
-                  No saved requests yet.
-                </p>
-              )}
-              {groupedRequests.map((group) => (
-                <Collapsible
-                  key={group.name || '__ungrouped__'}
-                  open={openGroups[group.name] ?? true}
-                  onOpenChange={(isOpen) =>
-                    handleGroupToggle(group.name, isOpen)
-                  }
-                  className="space-y-2"
-                >
-                  {editingGroup === group.name ? (
-                    <div className="flex items-center gap-2 rounded-md border border-border bg-muted/20 p-2">
-                      <Input
-                        value={groupNameInput}
-                        onChange={(event) =>
-                          setGroupNameInput(event.target.value)
-                        }
-                        onKeyDown={(event) => {
-                          if (event.key === 'Enter') {
-                            event.preventDefault();
-                            submitGroupRename(group.name);
-                          }
 
-                          if (event.key === 'Escape') {
-                            event.preventDefault();
-                            stopEditingGroup();
-                          }
-                        }}
-                        autoFocus
-                        placeholder="Ungrouped"
-                        className="h-7"
+      <ScrollArea className="flex-1 lg:h-[calc(100vh-140px)]">
+        <div className={cn("space-y-4 p-4 transition-all", isCollapsed && "p-2 flex flex-col items-center")}>
+          {/* Requests Section */}
+          <section className="w-full">
+            {!isCollapsed && (
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">Requests</p>
+                <Badge variant="outline" className="text-[10px] h-4">{requests.length}</Badge>
+              </div>
+            )}
+
+            <div className="space-y-2">
+              {isLoading && !isCollapsed && <p className="text-[10px] text-muted-foreground">Loading...</p>}
+              {groupedRequests.map((group) => (
+                isCollapsed ? (
+                  <div key={group.name || '__ungrouped__'} className="flex flex-col gap-1 items-center">
+                    {group.subGroups.flatMap(sg => sg.requests).map(req => (
+                      <SidebarInfoCard
+                        key={req.id}
+                        title={req.name}
+                        subtitle={req.url}
+                        badge={req.method}
+                        isActive={req.id === activeRequestId}
+                        isCollapsed
+                        onClick={() => onSelectRequest(req.id)}
                       />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="xs"
-                        onClick={() => submitGroupRename(group.name)}
-                      >
-                        Save
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="xs"
-                        onClick={stopEditingGroup}
-                      >
-                        Cancel
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-2">
-                      <CollapsibleTrigger className="flex w-full items-center justify-between rounded-md py-1 text-left hover:bg-muted/40">
-                        <div className="flex flex-1 min-w-0 items-center gap-2">
-                          <span className="text-[10px] text-muted-foreground">
-                            {(openGroups[group.name] ?? true) ? 'v' : '>'}
-                          </span>
-                          <p className="flex-1 truncate text-[11px] font-medium tracking-wide text-muted-foreground uppercase">
-                            {group.label}
-                          </p>
-                        </div>
-                        <Badge variant="outline">{group.requestCount}</Badge>
+                    ))}
+                  </div>
+                ) : (
+                  <Collapsible
+                    key={group.name || '__ungrouped__'}
+                    open={openGroups[group.name] ?? true}
+                    onOpenChange={(isOpen) => handleGroupToggle(group.name, isOpen)}
+                    className="space-y-1"
+                  >
+                    <div className="flex items-center gap-2 group/header">
+                      <CollapsibleTrigger className="flex flex-1 items-center gap-2 py-1 text-left">
+                        <span className="text-[8px] text-muted-foreground w-2">
+                          {(openGroups[group.name] ?? true) ? '▼' : '▶'}
+                        </span>
+                        <p className="flex-1 truncate text-[10px] font-bold text-muted-foreground/70 uppercase tracking-tight">
+                          {group.label}
+                        </p>
                       </CollapsibleTrigger>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="xs"
-                        className="h-auto px-1.5"
-                        onClick={() => startEditingGroup(group.name)}
-                      >
-                        Rename
+                      <Button variant="ghost" size="xs" className="h-4 px-1 text-[9px] opacity-0 group-hover/header:opacity-100" onClick={() => startEditingGroup(group.name)}>
+                        Edit
                       </Button>
                     </div>
-                  )}
-                  <CollapsibleContent className="space-y-2">
-                    {group.subGroups.map((subGroup) =>
-                      subGroup.name ? (
-                        <Collapsible
-                          key={subGroup.name}
-                          open={
-                            openSubGroups[`${group.name}::${subGroup.name}`] ??
-                            true
-                          }
-                          onOpenChange={(isOpen) =>
-                            handleSubGroupToggle(
-                              group.name,
-                              subGroup.name,
-                              isOpen,
-                            )
-                          }
-                          className="ml-4 space-y-2 w-[220px]"
-                        >
-                          <CollapsibleTrigger className="flex w-full items-center justify-between rounded-md py-1 pr-1 text-left hover:bg-muted/30">
-                            <div className="flex min-w-0 items-center gap-2">
-                              <span className="text-[10px] text-muted-foreground">
-                                {(openSubGroups[
-                                  `${group.name}::${subGroup.name}`
-                                ] ?? true)
-                                  ? 'v'
-                                  : '>'}
-                              </span>
-                              <p className="truncate text-[10px] font-medium tracking-wide text-muted-foreground uppercase">
-                                {subGroup.label}
-                              </p>
-                            </div>
-                            <Badge variant="outline">
-                              {subGroup.requests.length}
-                            </Badge>
-                          </CollapsibleTrigger>
-                          <CollapsibleContent className="ml-0 space-y-2">
-                            {subGroup.requests.map((request) => (
-                              <Link
-                                key={request.id}
-                                href={`/requests/${request.id}`}
-                                className="block"
-                              >
-                                <SidebarInfoCard
-                                  title={request.name}
-                                  subtitle={request.url}
-                                  badge={request.method}
-                                  isActive={request.id === activeRequestId}
-                                  isIntegrated={request.isIntegrated}
-                                  onClick={() => onSelectRequest(request.id)}
-                                  onToggleIntegrated={() => onToggleIntegrated(request.id, !request.isIntegrated)}
-                                />
-                              </Link>
-                            ))}
-                          </CollapsibleContent>
-                        </Collapsible>
-                      ) : (
-                        <div
-                          key="__default__"
-                          className="ml-0 space-y-2 w-[232px]"
-                        >
+                    <CollapsibleContent className="space-y-1 pl-2 border-l ml-1">
+                      {group.subGroups.map((subGroup) => (
+                        <div key={subGroup.name || '__default__'} className="space-y-1">
+                          {subGroup.name && (
+                            <p className="text-[9px] font-medium text-muted-foreground/50 px-2 py-0.5">{subGroup.label}</p>
+                          )}
                           {subGroup.requests.map((request) => (
-                            <Link
+                            <SidebarInfoCard
                               key={request.id}
-                              href={`/requests/${request.id}`}
-                              className="block"
-                            >
-                              <SidebarInfoCard
-                                title={request.name}
-                                subtitle={request.url}
-                                badge={request.method}
-                                isActive={request.id === activeRequestId}
-                                isIntegrated={request.isIntegrated}
-                                onClick={() => onSelectRequest(request.id)}
-                                onToggleIntegrated={() => onToggleIntegrated(request.id, !request.isIntegrated)}
-                              />
-                            </Link>
+                              title={request.name}
+                              subtitle={request.url}
+                              badge={request.method}
+                              isActive={request.id === activeRequestId}
+                              isIntegrated={request.isIntegrated}
+                              onClick={() => onSelectRequest(request.id)}
+                              onToggleIntegrated={() => onToggleIntegrated(request.id, !request.isIntegrated)}
+                            />
                           ))}
                         </div>
-                      ),
-                    )}
-                  </CollapsibleContent>
-                </Collapsible>
+                      ))}
+                    </CollapsibleContent>
+                  </Collapsible>
+                )
               ))}
             </div>
           </section>
+
           <Separator />
-          <section className="space-y-3">
-            <Collapsible
-              open={isHistoryOpen}
-              onOpenChange={setIsHistoryOpen}
-              className="space-y-2"
-            >
-              <div className="flex items-center gap-2">
-                <CollapsibleTrigger className="flex w-full items-center justify-between rounded-md py-1 text-left hover:bg-muted/40">
-                  <div className="flex flex-1 min-w-0 items-center gap-2">
-                    <span className="text-[10px] text-muted-foreground">
-                      {isHistoryOpen ? 'v' : '>'}
-                    </span>
-                    <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                      History
-                    </p>
-                  </div>
-                  <Badge variant="outline">{history.length}</Badge>
-                </CollapsibleTrigger>
-                {history.length > 0 && (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="xs"
-                    className="h-auto px-1.5 text-destructive hover:text-destructive"
-                    onClick={onClearHistory}
-                  >
-                    Remove All
-                  </Button>
-                )}
-              </div>
-              <CollapsibleContent className="space-y-2 w-[236px]">
-                {history.length === 0 && (
-                  <p className="text-xs text-muted-foreground">
-                    No executions recorded yet.
-                  </p>
-                )}
-                {history.map((entry) => (
+
+          {/* History Section */}
+          <section className="w-full">
+            {!isCollapsed && (
+              <Collapsible open={isHistoryOpen} onOpenChange={setIsHistoryOpen} className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <CollapsibleTrigger className="flex items-center gap-2 py-1 text-left">
+                    <span className="text-[8px] text-muted-foreground w-2">{isHistoryOpen ? '▼' : '▶'}</span>
+                    <p className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">History</p>
+                  </CollapsibleTrigger>
+                  <Button variant="ghost" size="xs" className="h-4 text-destructive text-[9px]" onClick={onClearHistory}>Clear</Button>
+                </div>
+                <CollapsibleContent className="space-y-1">
+                  {history.map((entry) => (
+                    <SidebarInfoCard
+                      key={entry.id}
+                      title={entry.method}
+                      subtitle={entry.url}
+                      badge={formatHistoryStatus(entry.statusCode)}
+                      badgeVariant={entry.statusCode && entry.statusCode >= 400 ? 'destructive' : 'outline'}
+                      isActive={entry.id === activeHistoryId}
+                      onClick={() => onSelectHistory(entry.id)}
+                    />
+                  ))}
+                </CollapsibleContent>
+              </Collapsible>
+            )}
+            {isCollapsed && (
+              <div className="flex flex-col gap-1 items-center">
+                <div className="text-[9px] font-bold text-muted-foreground/40 mb-1">HIST</div>
+                {history.slice(0, 5).map(entry => (
                   <SidebarInfoCard
                     key={entry.id}
                     title={entry.method}
                     subtitle={entry.url}
                     badge={formatHistoryStatus(entry.statusCode)}
-                    badgeVariant={
-                      entry.statusCode && entry.statusCode >= 400
-                        ? 'destructive'
-                        : 'outline'
-                    }
                     isActive={entry.id === activeHistoryId}
+                    isCollapsed
                     onClick={() => onSelectHistory(entry.id)}
                   />
                 ))}
-              </CollapsibleContent>
-            </Collapsible>
+              </div>
+            )}
           </section>
         </div>
       </ScrollArea>

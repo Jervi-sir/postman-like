@@ -79,3 +79,13 @@ export const notes = pgTable('notes', {
   createdAt: text('created_at').notNull(),
   updatedAt: text('updated_at').notNull(),
 });
+
+export const diagrams = pgTable('diagrams', {
+  id: text('id').primaryKey(),
+  name: text('name').notNull(),
+  nodes: text('nodes').notNull(), // JSON string
+  edges: text('edges').notNull(), // JSON string
+  viewport: text('viewport').notNull().default('{"x":0,"y":0,"zoom":1}'), // JSON string
+  createdAt: text('created_at').notNull(),
+  updatedAt: text('updated_at').notNull(),
+});
