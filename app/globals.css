@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
+@plugin "@tailwindcss/typography";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -127,4 +128,117 @@
   html {
     @apply font-sans;
   }
+}
+
+/* Yoopta Editor Custom Styles */
+.yoopta-editor {
+  @apply selection:bg-primary/30;
+}
+
+[data-yoopta-block] {
+  @apply transition-all duration-200 ease-in-out;
+}
+
+[data-yoopta-placeholder] {
+  @apply text-muted-foreground/30 font-normal italic;
+}
+
+/* Notion-like Typography overrides */
+.prose {
+  --tw-prose-body: var(--foreground);
+  --tw-prose-headings: var(--foreground);
+  --tw-prose-links: var(--primary);
+  --tw-prose-bold: var(--foreground);
+  --tw-prose-counters: var(--muted-foreground);
+  --tw-prose-bullets: var(--muted-foreground);
+  --tw-prose-hr: var(--border);
+  --tw-prose-quotes: var(--foreground);
+  --tw-prose-quote-borders: var(--primary);
+  --tw-prose-captions: var(--muted-foreground);
+  --tw-prose-code: var(--foreground);
+  --tw-prose-pre-code: var(--foreground);
+  --tw-prose-pre-bg: var(--muted);
+  --tw-prose-th-borders: var(--border);
+  --tw-prose-td-borders: var(--border);
+}
+
+.prose h1 {
+  @apply text-4xl font-extrabold tracking-tight mb-8 mt-12;
+}
+
+.prose h2 {
+  @apply text-2xl font-bold tracking-tight mb-4 mt-10 border-b border-border/40 pb-2;
+}
+
+.prose h3 {
+  @apply text-xl font-semibold tracking-tight mb-3 mt-8;
+}
+
+.prose p {
+  @apply leading-relaxed mb-4 text-foreground/90;
+}
+
+/* Tiptap Specific Overrides */
+.tiptap p.is-editor-empty:first-child::before {
+  @apply text-muted-foreground/50 float-left h-0 pointer-events-none;
+  content: attr(data-placeholder);
+}
+
+.tiptap p.is-empty::before {
+  @apply text-muted-foreground/30 float-left h-0 pointer-events-none;
+  content: attr(data-placeholder);
+}
+
+.tiptap {
+  @apply outline-none;
+}
+
+/* Fix for big cursor on empty lines */
+.tiptap p {
+  @apply min-h-[1.5em] m-0 mb-4;
+}
+
+/* Task list styling */
+.tiptap ul[data-type="taskList"] {
+  list-style: none;
+  padding: 0;
+}
+
+.tiptap ul[data-type="taskList"] li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.tiptap ul[data-type="taskList"] li > label {
+  flex: 0 0 auto;
+  user-select: none;
+}
+
+.tiptap ul[data-type="taskList"] li > div {
+  flex: 1 1 auto;
+}
+
+.tiptap .ProseMirror-selectednode {
+  @apply ring-2 ring-primary/20 bg-primary/5 rounded-sm;
+}
+
+.prose blockquote {
+  @apply border-l-4 border-primary/50 bg-primary/5 px-6 py-4 rounded-r-lg italic;
+}
+
+.prose code {
+  @apply bg-muted px-1.5 py-0.5 rounded-md text-sm font-mono text-primary font-medium;
+}
+
+.prose pre {
+  @apply bg-muted/50 border border-border/40 rounded-xl p-4 overflow-x-auto;
+}
+
+.prose ul, .prose ol {
+  @apply my-6 ml-6 space-y-2;
+}
+
+.prose li {
+  @apply pl-2;
 }

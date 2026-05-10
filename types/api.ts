@@ -25,6 +25,7 @@ export type SavedRequest = {
   updatedAt: string;
   isIntegrated: boolean;
   integratedAt: string | null;
+  description: string;
 };
 
 export type HistoryItem = {
@@ -80,6 +81,7 @@ export type EditorDraft = {
   bodyText: string;
   isIntegrated: boolean;
   integratedAt: string | null;
+  description: string;
 };
 
 export type RequestPayload = {
@@ -94,10 +96,24 @@ export type RequestPayload = {
   bodyText: string;
   isIntegrated?: boolean;
   integratedAt?: string | null;
+  description?: string;
   responseSnapshot?: ResponseSnapshot | null;
 };
 
 export type StoredVariables = {
   text: string;
   updatedAt: string;
+};
+
+export type Note = {
+  id: string;
+  title: string;
+  content: string; // JSON string
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type NotePayload = {
+  title: string;
+  content: string;
 };

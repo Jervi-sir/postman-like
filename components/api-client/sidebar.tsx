@@ -18,6 +18,7 @@ import {
   ChevronsLeft,
   CheckmarkCircle01Icon,
   CircleIcon,
+  Notebook01Icon,
 } from '@hugeicons/core-free-icons';
 import { HugeiconsIcon } from '@hugeicons/react';
 
@@ -236,6 +237,15 @@ export function Sidebar({
             New Request
           </Button>
         </div>
+      </div>
+      <Separator />
+      <div className="px-4 py-2">
+        <Link href="/notes">
+          <Button variant="ghost" className="w-full justify-start gap-2 h-9 text-xs font-medium" size="sm">
+            <HugeiconsIcon icon={Notebook01Icon} className="size-4" />
+            Notion Notes
+          </Button>
+        </Link>
       </div>
       <Separator />
       <ScrollArea className="h-[40vh] lg:h-[calc(100vh-73px)]">

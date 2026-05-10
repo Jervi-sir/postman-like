@@ -1,7 +1,7 @@
 import { db } from './db';
 import { v4 as uuidv4 } from 'uuid';
 import { eq, desc, sql } from 'drizzle-orm';
-import { requests, history, requestComments, globalVariables } from './schema';
+import { requests, history, requestComments, globalVariables, notes } from './schema';
 import type {
   SavedRequest,
   HistoryItem,
@@ -11,6 +11,8 @@ import type {
   StoredVariables,
   JsonMap,
   HttpMethod,
+  Note,
+  NotePayload,
 } from '@/types/api';
 
 // --- Helpers & Mappings ---
@@ -49,6 +51,7 @@ function mapRequestRow(row: any): SavedRequest {
     updatedAt: row.updatedAt,
     isIntegrated: row.isIntegrated,
     integratedAt: row.integratedAt,
+    description: row.description,
   };
 }
 
@@ -184,6 +187,7 @@ export async function createRequest(
       updatedAt: timestamp,
       isIntegrated: payload.isIntegrated ?? false,
       integratedAt: payload.integratedAt ?? null,
+      description: payload.description ?? '',
     });
 
     const created = await db.query.requests.findFirst({
@@ -225,6 +229,7 @@ export async function updateRequest(
         updatedAt: timestamp,
         isIntegrated: payload.isIntegrated ?? false,
         integratedAt: payload.integratedAt ?? null,
+        description: payload.description ?? '',
       })
       .where(eq(requests.id, id))
       .returning();
@@ -264,6 +269,32 @@ export async function toggleRequestIntegrated(
     return mapRequestRow(updated);
   } catch (error: any) {
     throw new Error(error.message || 'Failed to toggle integrated status');
+  }
+}
+
+export async function updateRequestDescription(
+  id: string,
+  description: string,
+): Promise<SavedRequest> {
+  try {
+    const timestamp = nowIso();
+
+    const [updated] = await db
+      .update(requests)
+      .set({
+        description,
+        updatedAt: timestamp,
+      })
+      .where(eq(requests.id, id))
+      .returning();
+
+    if (!updated) {
+      throw new Error('Request not found');
+    }
+
+    return mapRequestRow(updated);
+  } catch (error: any) {
+    throw new Error(error.message || 'Failed to update request description');
   }
 }
 
@@ -494,5 +525,87 @@ export async function executeRequest(
       errorText,
       url: targetUrl,
     };
+  }
+}
+
+// --- Notes ---
+
+export async function listNotes(): Promise<Note[]> {
+  try {
+    const rows = await db
+      .select()
+      .from(notes)
+      .orderBy(desc(notes.updatedAt), desc(notes.createdAt));
+    return rows;
+  } catch {
+    throw new Error('Failed to fetch notes');
+  }
+}
+
+export async function getNote(id: string): Promise<Note | null> {
+  try {
+    const note = await db.query.notes.findFirst({
+      where: eq(notes.id, id),
+    });
+    return note || null;
+  } catch {
+    throw new Error('Failed to fetch note');
+  }
+}
+
+export async function createNote(payload: NotePayload): Promise<Note> {
+  try {
+    const id = uuidv4();
+    const timestamp = nowIso();
+
+    const [created] = await db
+      .insert(notes)
+      .values({
+        id,
+        title: payload.title,
+        content: payload.content,
+        createdAt: timestamp,
+        updatedAt: timestamp,
+      })
+      .returning();
+
+    return created;
+  } catch (error: any) {
+    throw new Error(error.message || 'Failed to create note');
+  }
+}
+
+export async function updateNote(
+  id: string,
+  payload: NotePayload,
+): Promise<Note> {
+  try {
+    const timestamp = nowIso();
+
+    const [updated] = await db
+      .update(notes)
+      .set({
+        title: payload.title,
+        content: payload.content,
+        updatedAt: timestamp,
+      })
+      .where(eq(notes.id, id))
+      .returning();
+
+    if (!updated) {
+      throw new Error('Note not found');
+    }
+
+    return updated;
+  } catch (error: any) {
+    throw new Error(error.message || 'Failed to update note');
+  }
+}
+
+export async function deleteNote(id: string): Promise<void> {
+  try {
+    await db.delete(notes).where(eq(notes.id, id));
+  } catch {
+    throw new Error('Failed to delete note');
   }
 }

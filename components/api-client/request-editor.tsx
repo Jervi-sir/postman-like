@@ -9,6 +9,11 @@ import {
 
 import { generateCurlCommand, parseCurlToDraft } from '@/lib/curl';
 import { toast } from 'sonner';
+import Editor from 'react-simple-code-editor';
+import { highlight, languages } from 'prismjs';
+import 'prismjs/components/prism-markdown';
+import 'prismjs/components/prism-json';
+import 'prismjs/themes/prism-tomorrow.css';
 import { HugeiconsIcon } from '@hugeicons/react';
 import {
   MoreHorizontalIcon,
@@ -60,6 +65,7 @@ import type {
   VariableStoreMode,
 } from '@/types/api';
 import { Label } from '../ui/label';
+import { Separator } from '../ui/separator';
 
 type RequestEditorProps = {
   draft: EditorDraft;
@@ -78,6 +84,7 @@ type RequestEditorProps = {
   onSave: () => void;
   onSend: () => void;
   onToggleIntegrated: (isIntegrated: boolean) => void;
+  onSaveDescription: (description: string) => void;
 };
 
 type CodeTextareaProps = ComponentProps<typeof Textarea>;
@@ -141,17 +148,32 @@ function CodeTextarea({
             <div key={lineNumber}>{lineNumber}</div>
           ))}
         </div>
-        <Textarea
-          value={value}
-          onChange={onChange}
-          onKeyDown={handleKeyDown}
-          onScroll={handleScroll}
-          className={
-            'field-sizing-fixed h-52 overflow-x-hidden overflow-y-auto rounded-none border-0 bg-transparent px-3 py-3 font-mono text-[12px] leading-6 tracking-[0.01em] whitespace-pre-wrap break-normal [overflow-wrap:anywhere] text-slate-100 shadow-none outline-none caret-sky-400 placeholder:text-slate-500 selection:bg-sky-500/20 focus-visible:border-0 focus-visible:ring-0 ' +
-            (className ?? '')
-          }
-          {...props}
-        />
+        <div className="flex-1 overflow-auto">
+          <Editor
+            value={value ?? ''}
+            onValueChange={(code) => {
+              onChange?.({
+                target: { value: code },
+                currentTarget: { value: code },
+              } as any);
+            }}
+            highlight={(code) => highlight(code, languages.json || languages.javascript, 'json')}
+            padding={12}
+            onScroll={(e: any) => {
+              if (gutterRef.current) {
+                gutterRef.current.scrollTop = e.currentTarget.scrollTop;
+              }
+            }}
+            style={{
+              fontFamily: '"Fira Code", "Fira Mono", monospace',
+              fontSize: 12,
+              minHeight: '13rem',
+              backgroundColor: 'transparent',
+            }}
+            className={className}
+            {...props}
+          />
+        </div>
       </div>
     </div>
   );
@@ -174,11 +196,13 @@ export function RequestEditor({
   onSave,
   onSend,
   onToggleIntegrated,
+  onSaveDescription,
 }: RequestEditorProps) {
   const [isImportOpen, setIsImportOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [curlCommand, setCurlCommand] = useState('');
   const [importError, setImportError] = useState<string | null>(null);
+
   const groupSuggestions = useMemo(
     () =>
       [...new Set(requests.map((request) => request.groupName.trim()))]
@@ -424,8 +448,9 @@ export function RequestEditor({
           <Tabs defaultValue="body" className="gap-4">
             <TabsList
               variant="line"
-              className="w-full justify-start rounded-none border-b border-border p-0"
+              className="justify-start rounded-none p-0"
             >
+              <TabsTrigger value="description">Description</TabsTrigger>
               <TabsTrigger value="body">Body</TabsTrigger>
               <TabsTrigger value="headers">Headers</TabsTrigger>
               <TabsTrigger value="query">Query Params</TabsTrigger>
@@ -472,6 +497,39 @@ export function RequestEditor({
                 Saved in this browser only. Use placeholders like
                 <code>{'{{base_url}}'}</code> or <code>{'{{tenant_id}}'}</code>{' '}
                 in URL, headers, query params, and body.
+              </p>
+            </TabsContent>
+            <TabsContent value="description" className="space-y-2">
+              <div className="overflow-hidden rounded-xl border border-border/80 bg-[#0d1117] shadow-sm">
+                <div className="border-b border-white/5 bg-white/[0.03] px-3 py-1.5 font-mono text-[11px] tracking-wide text-slate-400 uppercase flex items-center justify-between">
+                  <span className='font-mono p-0 m-0'>Request Description</span>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => onSaveDescription(draft.description)}
+                    disabled={isSaving}
+                  >
+                    {isSaving ? 'Saving...' : 'Save Description'}
+                  </Button>
+                </div>
+                <div className="min-h-96">
+                  <Editor
+                    value={draft.description}
+                    onValueChange={(code) => onChange({ description: code })}
+                    highlight={(code) => highlight(code, languages.markdown, 'markdown')}
+                    padding={16}
+                    style={{
+                      fontFamily: '"Fira Code", "Fira Mono", monospace',
+                      fontSize: 12,
+                      minHeight: '24rem',
+                      backgroundColor: 'transparent',
+                    }}
+                    className="description-editor"
+                  />
+                </div>
+              </div>
+              <p className="text-[11px] text-muted-foreground">
+                Tip: Use markdown to document parameters, authentication, and response structures. Syntax highlighting is enabled.
               </p>
             </TabsContent>
           </Tabs>

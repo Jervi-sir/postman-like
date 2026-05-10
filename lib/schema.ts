@@ -23,6 +23,7 @@ export const requests = pgTable('requests', {
   updatedAt: text('updated_at').notNull(),
   isIntegrated: boolean('is_integrated').notNull().default(false),
   integratedAt: text('integrated_at'),
+  description: text('description').notNull().default(''),
 });
 
 export const history = pgTable('history', {
@@ -70,3 +71,11 @@ export const requestCommentsRelations = relations(requestComments, ({ one }) => 
     references: [requests.id],
   }),
 }));
+
+export const notes = pgTable('notes', {
+  id: text('id').primaryKey(),
+  title: text('title').notNull(),
+  content: text('content').notNull(), // Yoopta JSON content
+  createdAt: text('created_at').notNull(),
+  updatedAt: text('updated_at').notNull(),
+});

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { CommentsPanel } from '@/components/api-client/comments-panel';
 import { ResponsePanel } from '@/components/api-client/response-panel';
@@ -26,6 +26,7 @@ const emptyDraftBaseline: EditorDraft = {
   bodyText: '',
   isIntegrated: false,
   integratedAt: null,
+  description: '',
 };
 
 function getComparableDraft(draft: EditorDraft) {
@@ -38,6 +39,7 @@ function getComparableDraft(draft: EditorDraft) {
     headersText: draft.headersText.trim(),
     queryText: draft.queryText.trim(),
     bodyText: draft.bodyText.trim(),
+    description: draft.description.trim(),
   };
 }
 
@@ -118,12 +120,21 @@ export default function RequestPage() {
     }
   }, [id, requests, selectRequest, draft.id]);
 
-  const handleSave = async () => {
+  const handleSave = useCallback(async () => {
     await saveCurrentRequest();
-    // After saving, the draft.id might have changed (if it was new)
-    // but here we are already on a request page, so id shouldn't change unless it was a rename?
-    // Actually, createRequest happens on / mostly.
-  };
+  }, [saveCurrentRequest]);
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if ((event.ctrlKey || event.metaKey) && event.key === 's') {
+        event.preventDefault();
+        void handleSave();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleSave]);
 
   const handleDelete = async () => {
     await deleteCurrentRequest();
@@ -153,6 +164,7 @@ export default function RequestPage() {
           bodyText: savedRequest.bodyText,
           isIntegrated: savedRequest.isIntegrated,
           integratedAt: savedRequest.integratedAt,
+          description: savedRequest.description,
         }
       : emptyDraftBaseline;
 
@@ -204,6 +216,9 @@ export default function RequestPage() {
         onSend={() => void executeCurrentRequest()}
         onToggleIntegrated={(isIntegrated) =>
           void useApiClientStore.getState().toggleIntegratedStatus(id, isIntegrated)
+        }
+        onSaveDescription={(description) =>
+          void useApiClientStore.getState().saveRequestDescription(description)
         }
       />
       <div className="flex flex-1 flex-col lg:flex-row overflow-hidden">

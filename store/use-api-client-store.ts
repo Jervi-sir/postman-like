@@ -46,6 +46,7 @@ type ApiClientState = {
   clearHistory: () => Promise<void>;
   executeCurrentRequest: () => Promise<void>;
   toggleIntegratedStatus: (requestId: string, isIntegrated: boolean) => Promise<void>;
+  saveRequestDescription: (description: string) => Promise<void>;
 };
 
 const localVariablesStorageKey = 'api-client-local-settings';
@@ -72,6 +73,7 @@ const defaultDraft: EditorDraft = {
   bodyText: '',
   isIntegrated: false,
   integratedAt: null,
+  description: '',
 };
 
 function toDraft(savedRequest: SavedRequest): EditorDraft {
@@ -87,6 +89,7 @@ function toDraft(savedRequest: SavedRequest): EditorDraft {
     bodyText: savedRequest.bodyText,
     isIntegrated: savedRequest.isIntegrated,
     integratedAt: savedRequest.integratedAt,
+    description: savedRequest.description,
   };
 }
 
@@ -194,6 +197,7 @@ function toRequestPayload(draft: EditorDraft): RequestPayload {
     bodyText: draft.bodyText,
     isIntegrated: draft.isIntegrated,
     integratedAt: draft.integratedAt,
+    description: draft.description,
   };
 }
 
@@ -663,6 +667,32 @@ export const useApiClientStore = create<ApiClientState>()((set, get) => ({
             ? error.message
             : 'Failed to update integrated status',
       });
+    }
+  },
+  saveRequestDescription: async (description) => {
+    const { draft } = get();
+    if (!draft.id) return;
+
+    set({ isSaving: true, editorError: null });
+
+    try {
+      const savedRequest = await apiClient.updateRequestDescription(draft.id, description);
+
+      set((state) => ({
+        requests: state.requests.map((r) =>
+          r.id === savedRequest.id ? savedRequest : r
+        ),
+        draft: toDraft(savedRequest),
+      }));
+    } catch (error) {
+      set({
+        editorError:
+          error instanceof Error
+            ? error.message
+            : 'Failed to save description',
+      });
+    } finally {
+      set({ isSaving: false });
     }
   },
 }));

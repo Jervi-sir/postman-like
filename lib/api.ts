@@ -51,6 +51,14 @@ export const apiClient = {
     return handleResponse<SavedRequest>(res);
   },
 
+  updateRequestDescription: async (id: string, description: string): Promise<SavedRequest> => {
+    const res = await fetch(`/api/requests/${id}/description`, {
+      method: 'PATCH',
+      body: JSON.stringify({ description }),
+    });
+    return handleResponse<SavedRequest>(res);
+  },
+
   renameGroup: async (currentName: string, nextName: string): Promise<SavedRequest[]> => {
     const res = await fetch('/api/requests/rename-group', {
       method: 'POST',
