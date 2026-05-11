@@ -24,8 +24,10 @@ const emptyDraftBaseline: EditorDraft = {
   headersText: '{}',
   queryText: '{}',
   bodyText: '',
-  isIntegrated: false,
-  integratedAt: null,
+  isIntegratedFrontend: false,
+  integratedFrontendAt: null,
+  isIntegratedMobile: false,
+  integratedMobileAt: null,
   description: '',
 };
 
@@ -152,8 +154,10 @@ export default function Home() {
           headersText: JSON.stringify(savedRequest.headers, null, 2),
           queryText: JSON.stringify(savedRequest.query, null, 2),
           bodyText: savedRequest.bodyText,
-          isIntegrated: savedRequest.isIntegrated,
-          integratedAt: savedRequest.integratedAt,
+          isIntegratedFrontend: savedRequest.isIntegratedFrontend,
+          integratedFrontendAt: savedRequest.integratedFrontendAt,
+          isIntegratedMobile: savedRequest.isIntegratedMobile,
+          integratedMobileAt: savedRequest.integratedMobileAt,
           description: savedRequest.description,
         }
       : emptyDraftBaseline;
@@ -187,9 +191,9 @@ export default function Home() {
         onSave={() => void handleSave()}
         onDelete={() => void handleDelete()}
         onSend={() => void executeCurrentRequest()}
-        onToggleIntegrated={(isIntegrated) => {
+        onToggleIntegrated={(type, isIntegrated) => {
           if (draft.id) {
-            void useApiClientStore.getState().toggleIntegratedStatus(draft.id, isIntegrated)
+            void useApiClientStore.getState().toggleIntegratedStatus(draft.id, type, isIntegrated)
           }
         }}
         onSaveDescription={(description) =>

@@ -21,8 +21,10 @@ export const requests = pgTable('requests', {
   responseErrorText: text('response_error_text'),
   createdAt: text('created_at').notNull(),
   updatedAt: text('updated_at').notNull(),
-  isIntegrated: boolean('is_integrated').notNull().default(false),
-  integratedAt: text('integrated_at'),
+  isIntegratedFrontend: boolean('is_integrated_frontend').notNull().default(false),
+  integratedFrontendAt: text('integrated_frontend_at'),
+  isIntegratedMobile: boolean('is_integrated_mobile').notNull().default(false),
+  integratedMobileAt: text('integrated_mobile_at'),
   description: text('description').notNull().default(''),
 });
 

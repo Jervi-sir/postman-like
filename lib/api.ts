@@ -43,10 +43,10 @@ export const apiClient = {
     return handleResponse<SavedRequest>(res);
   },
   
-  toggleIntegrated: async (id: string, isIntegrated: boolean, integratedAt: string | null): Promise<SavedRequest> => {
+  toggleIntegrated: async (id: string, type: 'frontend' | 'mobile', isIntegrated: boolean, integratedAt: string | null): Promise<SavedRequest> => {
     const res = await fetch(`/api/requests/${id}/integrated`, {
       method: 'POST',
-      body: JSON.stringify({ isIntegrated, integratedAt }),
+      body: JSON.stringify({ type, isIntegrated, integratedAt }),
     });
     return handleResponse<SavedRequest>(res);
   },

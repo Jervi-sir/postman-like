@@ -23,8 +23,10 @@ export type SavedRequest = {
   responseErrorText: string | null;
   createdAt: string;
   updatedAt: string;
-  isIntegrated: boolean;
-  integratedAt: string | null;
+  isIntegratedFrontend: boolean;
+  integratedFrontendAt: string | null;
+  isIntegratedMobile: boolean;
+  integratedMobileAt: string | null;
   description: string;
 };
 
@@ -79,8 +81,10 @@ export type EditorDraft = {
   headersText: string;
   queryText: string;
   bodyText: string;
-  isIntegrated: boolean;
-  integratedAt: string | null;
+  isIntegratedFrontend: boolean;
+  integratedFrontendAt: string | null;
+  isIntegratedMobile: boolean;
+  integratedMobileAt: string | null;
   description: string;
 };
 
@@ -94,8 +98,10 @@ export type RequestPayload = {
   headers: JsonMap;
   query: JsonMap;
   bodyText: string;
-  isIntegrated?: boolean;
-  integratedAt?: string | null;
+  isIntegratedFrontend?: boolean;
+  integratedFrontendAt?: string | null;
+  isIntegratedMobile?: boolean;
+  integratedMobileAt?: string | null;
   description?: string;
   responseSnapshot?: ResponseSnapshot | null;
 };

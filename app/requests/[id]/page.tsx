@@ -24,8 +24,10 @@ const emptyDraftBaseline: EditorDraft = {
   headersText: '{\n  "Content-Type": "application/json"\n}',
   queryText: '{}',
   bodyText: '',
-  isIntegrated: false,
-  integratedAt: null,
+  isIntegratedFrontend: false,
+  integratedFrontendAt: null,
+  isIntegratedMobile: false,
+  integratedMobileAt: null,
   description: '',
 };
 
@@ -162,8 +164,10 @@ export default function RequestPage() {
           headersText: JSON.stringify(savedRequest.headers, null, 2),
           queryText: JSON.stringify(savedRequest.query, null, 2),
           bodyText: savedRequest.bodyText,
-          isIntegrated: savedRequest.isIntegrated,
-          integratedAt: savedRequest.integratedAt,
+          isIntegratedFrontend: savedRequest.isIntegratedFrontend,
+          integratedFrontendAt: savedRequest.integratedFrontendAt,
+          isIntegratedMobile: savedRequest.isIntegratedMobile,
+          integratedMobileAt: savedRequest.integratedMobileAt,
           description: savedRequest.description,
         }
       : emptyDraftBaseline;
@@ -214,8 +218,8 @@ export default function RequestPage() {
         onSave={() => void handleSave()}
         onDelete={() => void handleDelete()}
         onSend={() => void executeCurrentRequest()}
-        onToggleIntegrated={(isIntegrated) =>
-          void useApiClientStore.getState().toggleIntegratedStatus(id, isIntegrated)
+        onToggleIntegrated={(type, isIntegrated) =>
+          void useApiClientStore.getState().toggleIntegratedStatus(id, type, isIntegrated)
         }
         onSaveDescription={(description) =>
           void useApiClientStore.getState().saveRequestDescription(description)

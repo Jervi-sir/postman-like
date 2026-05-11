@@ -34,7 +34,7 @@ type SidebarProps = {
   onRenameGroup: (currentName: string, nextName: string) => void;
   onSelectHistory: (id: number) => void;
   onSelectRequest: (id: string) => void;
-  onToggleIntegrated: (id: string, isIntegrated: boolean) => void;
+  onToggleIntegrated: (id: string, type: 'frontend' | 'mobile', isIntegrated: boolean) => void;
 };
 
 type SidebarInfoCardProps = {
@@ -43,9 +43,10 @@ type SidebarInfoCardProps = {
   badge: string;
   badgeVariant?: 'outline' | 'destructive';
   isActive: boolean;
-  isIntegrated?: boolean;
+  isIntegratedFrontend?: boolean;
+  isIntegratedMobile?: boolean;
   onClick: () => void;
-  onToggleIntegrated?: (event: React.MouseEvent) => void;
+  onToggleIntegrated?: (type: 'frontend' | 'mobile', event: React.MouseEvent) => void;
   isCollapsed?: boolean;
 };
 
@@ -55,7 +56,8 @@ function SidebarInfoCard({
   badge,
   badgeVariant = 'outline',
   isActive,
-  isIntegrated,
+  isIntegratedFrontend,
+  isIntegratedMobile,
   onClick,
   onToggleIntegrated,
   isCollapsed = false,
@@ -78,7 +80,7 @@ function SidebarInfoCard({
   return (
     <div
       onClick={onClick}
-      className={`w-full space-y-0 rounded-sm border px-2 py-1 text-left transition-colors cursor-pointer ${isActive
+      className={`space-y-0 rounded-sm border px-2 py-1 text-left transition-colors cursor-pointer ${isActive
         ? 'border-primary/40 bg-primary/5'
         : 'border-border bg-background hover:bg-muted/50'
         }`}
@@ -93,20 +95,38 @@ function SidebarInfoCard({
       </div>
       <div className='flex flex-row items-center justify-between'>
         <p className="truncate text-[9px] text-muted-foreground">{subtitle}</p>
-        <div className='pr-2.5'>
+        <div className='flex items-center gap-1'>
           <button
+            title="Frontend Integration"
             onClick={(e) => {
               e.stopPropagation();
               e.preventDefault();
-              onToggleIntegrated?.(e);
+              onToggleIntegrated?.('frontend', e);
             }}
-            className={`size-3.5 shrink-0 transition-colors ${isIntegrated
+            className={`size-3.5 shrink-0 transition-colors ${isIntegratedFrontend
               ? 'text-green-500'
               : 'text-muted-foreground/40 hover:text-muted-foreground'
               }`}
           >
             <HugeiconsIcon
-              icon={isIntegrated ? CheckmarkCircle01Icon : CircleIcon}
+              icon={isIntegratedFrontend ? CheckmarkCircle01Icon : CircleIcon}
+              className="size-3"
+            />
+          </button>
+          <button
+            title="Mobile Integration"
+            onClick={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+              onToggleIntegrated?.('mobile', e);
+            }}
+            className={`size-3.5 shrink-0 transition-colors ${isIntegratedMobile
+              ? 'text-blue-500'
+              : 'text-muted-foreground/40 hover:text-muted-foreground'
+              }`}
+          >
+            <HugeiconsIcon
+              icon={isIntegratedMobile ? CheckmarkCircle01Icon : CircleIcon}
               className="size-3"
             />
           </button>
@@ -296,7 +316,7 @@ export function Sidebar({
               </div>
             )}
 
-            <div className="space-y-2">
+            <div className="space-y-2" style={{ width: 236 }}>
               {isLoading && !isCollapsed && <p className="text-[10px] text-muted-foreground">Loading...</p>}
               {groupedRequests.map((group) => (
                 isCollapsed ? (
@@ -308,6 +328,8 @@ export function Sidebar({
                         subtitle={req.url}
                         badge={req.method}
                         isActive={req.id === activeRequestId}
+                        isIntegratedFrontend={req.isIntegratedFrontend}
+                        isIntegratedMobile={req.isIntegratedMobile}
                         isCollapsed
                         onClick={() => onSelectRequest(req.id)}
                       />
@@ -346,9 +368,13 @@ export function Sidebar({
                               subtitle={request.url}
                               badge={request.method}
                               isActive={request.id === activeRequestId}
-                              isIntegrated={request.isIntegrated}
+                              isIntegratedFrontend={request.isIntegratedFrontend}
+                              isIntegratedMobile={request.isIntegratedMobile}
                               onClick={() => onSelectRequest(request.id)}
-                              onToggleIntegrated={() => onToggleIntegrated(request.id, !request.isIntegrated)}
+                              onToggleIntegrated={(type) => {
+                                const current = type === 'frontend' ? request.isIntegratedFrontend : request.isIntegratedMobile;
+                                onToggleIntegrated(request.id, type, !current);
+                              }}
                             />
                           ))}
                         </div>
@@ -363,7 +389,7 @@ export function Sidebar({
           <Separator />
 
           {/* History Section */}
-          <section className="w-full">
+          <section className="w-full" style={{ width: 236 }}>
             {!isCollapsed && (
               <Collapsible open={isHistoryOpen} onOpenChange={setIsHistoryOpen} className="space-y-2">
                 <div className="flex items-center justify-between">

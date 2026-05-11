@@ -51,8 +51,8 @@ export function ClientWrapper({ children }: { children: React.ReactNode }) {
         }
         onSelectHistory={selectHistory}
         onSelectRequest={handleSelectRequest}
-        onToggleIntegrated={(id, isIntegrated) =>
-          void useApiClientStore.getState().toggleIntegratedStatus(id, isIntegrated)
+        onToggleIntegrated={(id, type, isIntegrated) =>
+          void useApiClientStore.getState().toggleIntegratedStatus(id, type, isIntegrated)
         }
       />
       <div className="flex min-h-screen flex-1 flex-col overflow-hidden">

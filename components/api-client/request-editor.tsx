@@ -83,7 +83,7 @@ type RequestEditorProps = {
   onDelete: () => void;
   onSave: () => void;
   onSend: () => void;
-  onToggleIntegrated: (isIntegrated: boolean) => void;
+  onToggleIntegrated: (type: 'frontend' | 'mobile', isIntegrated: boolean) => void;
   onSaveDescription: (description: string) => void;
 };
 
@@ -267,28 +267,52 @@ export function RequestEditor({
         <CardHeader className="px-0 pb-4">
           <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
             <div className="space-y-1">
-              {draft.id && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className={
-                    draft.isIntegrated
-                      ? 'border-green-600/30 bg-green-600/10 text-green-600 hover:bg-green-600/20 hover:text-green-700'
-                      : 'text-muted-foreground'
-                  }
-                  onClick={() => {
-                    onToggleIntegrated(!draft.isIntegrated);
-                  }}
-                >
-                  <HugeiconsIcon
-                    icon={
-                      draft.isIntegrated ? CheckmarkCircle01Icon : CircleIcon
-                    }
-                    className="mr-2 size-4"
-                  />
-                  {draft.isIntegrated ? 'Integrated' : 'Mark as Integrated'}
-                </Button>
-              )}
+              <div className="flex flex-wrap items-center gap-2">
+                {draft.id && (
+                  <>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className={
+                        draft.isIntegratedFrontend
+                          ? 'border-green-600/30 bg-green-600/10 text-green-600 hover:bg-green-600/20 hover:text-green-700'
+                          : 'text-muted-foreground'
+                      }
+                      onClick={() => {
+                        onToggleIntegrated('frontend', !draft.isIntegratedFrontend);
+                      }}
+                    >
+                      <HugeiconsIcon
+                        icon={
+                          draft.isIntegratedFrontend ? CheckmarkCircle01Icon : CircleIcon
+                        }
+                        className="mr-2 size-4"
+                      />
+                      {draft.isIntegratedFrontend ? 'Integrated in Frontend' : 'Mark as Integrated in Frontend'}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className={
+                        draft.isIntegratedMobile
+                          ? 'border-blue-600/30 bg-blue-600/10 text-blue-600 hover:bg-blue-600/20 hover:text-blue-700'
+                          : 'text-muted-foreground'
+                      }
+                      onClick={() => {
+                        onToggleIntegrated('mobile', !draft.isIntegratedMobile);
+                      }}
+                    >
+                      <HugeiconsIcon
+                        icon={
+                          draft.isIntegratedMobile ? CheckmarkCircle01Icon : CircleIcon
+                        }
+                        className="mr-2 size-4"
+                      />
+                      {draft.isIntegratedMobile ? 'Integrated in Mobile' : 'Mark as Integrated in Mobile'}
+                    </Button>
+                  </>
+                )}
+              </div>
             </div>
             <div className="flex items-center gap-2">
 
@@ -462,7 +486,7 @@ export function RequestEditor({
               <TabsTrigger value="description">Description</TabsTrigger>
               <TabsTrigger value="body">Body</TabsTrigger>
               <TabsTrigger value="headers">Headers</TabsTrigger>
-              <TabsTrigger value="query">Query Params</TabsTrigger>
+              {/* <TabsTrigger value="query">Query Params</TabsTrigger> */}
               <TabsTrigger value="variables">{variablesTitle}</TabsTrigger>
             </TabsList>
             <TabsContent value="headers">

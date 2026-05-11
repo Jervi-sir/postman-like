@@ -7,8 +7,8 @@ export async function POST(
 ) {
   try {
     const { id } = await params;
-    const { isIntegrated, integratedAt } = await request.json();
-    const data = await services.toggleRequestIntegrated(id, isIntegrated, integratedAt);
+    const { type, isIntegrated, integratedAt } = await request.json();
+    const data = await services.toggleRequestIntegrated(id, type, isIntegrated, integratedAt);
     return NextResponse.json(data);
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });

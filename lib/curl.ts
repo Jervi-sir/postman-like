@@ -182,8 +182,10 @@ export function parseCurlToDraft(command: string): EditorDraft {
     headersText: stringifyJson(headers),
     queryText: '{}',
     bodyText,
-    isIntegrated: false,
-    integratedAt: null,
+    isIntegratedFrontend: false,
+    integratedFrontendAt: null,
+    isIntegratedMobile: false,
+    integratedMobileAt: null,
     description: '',
   };
 }

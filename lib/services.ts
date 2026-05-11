@@ -49,8 +49,10 @@ function mapRequestRow(row: any): SavedRequest {
     responseErrorText: row.responseErrorText,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
-    isIntegrated: row.isIntegrated,
-    integratedAt: row.integratedAt,
+    isIntegratedFrontend: row.isIntegratedFrontend,
+    integratedFrontendAt: row.integratedFrontendAt,
+    isIntegratedMobile: row.isIntegratedMobile,
+    integratedMobileAt: row.integratedMobileAt,
     description: row.description,
   };
 }
@@ -185,8 +187,10 @@ export async function createRequest(
       responseErrorText: payload.responseSnapshot?.errorText ?? null,
       createdAt: timestamp,
       updatedAt: timestamp,
-      isIntegrated: payload.isIntegrated ?? false,
-      integratedAt: payload.integratedAt ?? null,
+      isIntegratedFrontend: payload.isIntegratedFrontend ?? false,
+      integratedFrontendAt: payload.integratedFrontendAt ?? null,
+      isIntegratedMobile: payload.isIntegratedMobile ?? false,
+      integratedMobileAt: payload.integratedMobileAt ?? null,
       description: payload.description ?? '',
     });
 
@@ -227,8 +231,10 @@ export async function updateRequest(
         responseUrl: payload.responseSnapshot?.url ?? '',
         responseErrorText: payload.responseSnapshot?.errorText ?? null,
         updatedAt: timestamp,
-        isIntegrated: payload.isIntegrated ?? false,
-        integratedAt: payload.integratedAt ?? null,
+        isIntegratedFrontend: payload.isIntegratedFrontend ?? false,
+        integratedFrontendAt: payload.integratedFrontendAt ?? null,
+        isIntegratedMobile: payload.isIntegratedMobile ?? false,
+        integratedMobileAt: payload.integratedMobileAt ?? null,
         description: payload.description ?? '',
       })
       .where(eq(requests.id, id))
@@ -246,19 +252,25 @@ export async function updateRequest(
 
 export async function toggleRequestIntegrated(
   id: string,
+  type: 'frontend' | 'mobile',
   isIntegrated: boolean,
   integratedAt: string | null,
 ): Promise<SavedRequest> {
   try {
     const timestamp = nowIso();
+    const updatePayload: any = { updatedAt: timestamp };
+
+    if (type === 'frontend') {
+      updatePayload.isIntegratedFrontend = isIntegrated;
+      updatePayload.integratedFrontendAt = integratedAt;
+    } else {
+      updatePayload.isIntegratedMobile = isIntegrated;
+      updatePayload.integratedMobileAt = integratedAt;
+    }
 
     const [updated] = await db
       .update(requests)
-      .set({
-        isIntegrated,
-        integratedAt,
-        updatedAt: timestamp,
-      })
+      .set(updatePayload)
       .where(eq(requests.id, id))
       .returning();
 

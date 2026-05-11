@@ -45,7 +45,7 @@ type ApiClientState = {
   deleteComment: (id: number) => Promise<void>;
   clearHistory: () => Promise<void>;
   executeCurrentRequest: () => Promise<void>;
-  toggleIntegratedStatus: (requestId: string, isIntegrated: boolean) => Promise<void>;
+  toggleIntegratedStatus: (requestId: string, type: 'frontend' | 'mobile', isIntegrated: boolean) => Promise<void>;
   saveRequestDescription: (description: string) => Promise<void>;
 };
 
@@ -71,8 +71,10 @@ const defaultDraft: EditorDraft = {
   headersText: '{\n  "Content-Type": "application/json"\n}',
   queryText: '{}',
   bodyText: '',
-  isIntegrated: false,
-  integratedAt: null,
+  isIntegratedFrontend: false,
+  integratedFrontendAt: null,
+  isIntegratedMobile: false,
+  integratedMobileAt: null,
   description: '',
 };
 
@@ -87,8 +89,10 @@ function toDraft(savedRequest: SavedRequest): EditorDraft {
     headersText: stringifyJson(savedRequest.headers),
     queryText: stringifyJson(savedRequest.query),
     bodyText: savedRequest.bodyText,
-    isIntegrated: savedRequest.isIntegrated,
-    integratedAt: savedRequest.integratedAt,
+    isIntegratedFrontend: savedRequest.isIntegratedFrontend,
+    integratedFrontendAt: savedRequest.integratedFrontendAt,
+    isIntegratedMobile: savedRequest.isIntegratedMobile,
+    integratedMobileAt: savedRequest.integratedMobileAt,
     description: savedRequest.description,
   };
 }
@@ -195,8 +199,10 @@ function toRequestPayload(draft: EditorDraft): RequestPayload {
     headers: parseJsonObject(draft.headersText, 'Headers'),
     query: parseJsonObject(draft.queryText, 'Query params'),
     bodyText: draft.bodyText,
-    isIntegrated: draft.isIntegrated,
-    integratedAt: draft.integratedAt,
+    isIntegratedFrontend: draft.isIntegratedFrontend,
+    integratedFrontendAt: draft.integratedFrontendAt,
+    isIntegratedMobile: draft.isIntegratedMobile,
+    integratedMobileAt: draft.integratedMobileAt,
     description: draft.description,
   };
 }
@@ -631,22 +637,28 @@ export const useApiClientStore = create<ApiClientState>()((set, get) => ({
       set({ isExecuting: false });
     }
   },
-  toggleIntegratedStatus: async (requestId, isIntegrated) => {
+  toggleIntegratedStatus: async (requestId, type, isIntegrated) => {
     const integratedAt = isIntegrated ? new Date().toISOString() : null;
 
     // Optimistic update
-    set((state) => ({
-      requests: state.requests.map((r) =>
-        r.id === requestId ? { ...r, isIntegrated, integratedAt } : r
-      ),
-      draft:
-        state.draft.id === requestId
-          ? { ...state.draft, isIntegrated, integratedAt }
-          : state.draft,
-    }));
+    set((state) => {
+      const update = type === 'frontend' 
+        ? { isIntegratedFrontend: isIntegrated, integratedFrontendAt: integratedAt }
+        : { isIntegratedMobile: isIntegrated, integratedMobileAt: integratedAt };
+
+      return {
+        requests: state.requests.map((r) =>
+          r.id === requestId ? { ...r, ...update } : r
+        ),
+        draft:
+          state.draft.id === requestId
+            ? { ...state.draft, ...update }
+            : state.draft,
+      };
+    });
 
     try {
-      await apiClient.toggleIntegrated(requestId, isIntegrated, integratedAt);
+      await apiClient.toggleIntegrated(requestId, type, isIntegrated, integratedAt);
     } catch (error) {
       // Revert on error
       const originalRequest = get().requests.find((r) => r.id === requestId);
