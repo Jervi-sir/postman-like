@@ -155,21 +155,21 @@ export default function RequestPage() {
 
     const baseline = savedRequest
       ? {
-          id: savedRequest.id,
-          name: savedRequest.name,
-          groupName: savedRequest.groupName,
-          subGroupName: savedRequest.subGroupName,
-          method: savedRequest.method,
-          url: savedRequest.url,
-          headersText: JSON.stringify(savedRequest.headers, null, 2),
-          queryText: JSON.stringify(savedRequest.query, null, 2),
-          bodyText: savedRequest.bodyText,
-          isIntegratedFrontend: savedRequest.isIntegratedFrontend,
-          integratedFrontendAt: savedRequest.integratedFrontendAt,
-          isIntegratedMobile: savedRequest.isIntegratedMobile,
-          integratedMobileAt: savedRequest.integratedMobileAt,
-          description: savedRequest.description,
-        }
+        id: savedRequest.id,
+        name: savedRequest.name,
+        groupName: savedRequest.groupName,
+        subGroupName: savedRequest.subGroupName,
+        method: savedRequest.method,
+        url: savedRequest.url,
+        headersText: JSON.stringify(savedRequest.headers, null, 2),
+        queryText: JSON.stringify(savedRequest.query, null, 2),
+        bodyText: savedRequest.bodyText,
+        isIntegratedFrontend: savedRequest.isIntegratedFrontend,
+        integratedFrontendAt: savedRequest.integratedFrontendAt,
+        isIntegratedMobile: savedRequest.isIntegratedMobile,
+        integratedMobileAt: savedRequest.integratedMobileAt,
+        description: savedRequest.description,
+      }
       : emptyDraftBaseline;
 
     const draftChanged =
@@ -194,7 +194,7 @@ export default function RequestPage() {
   const currentRequest = requests.find(r => r.id === id);
   if (!currentRequest && requests.length > 0) {
     return (
-       <div className="flex flex-1 items-center justify-center">
+      <div className="flex flex-1 items-center justify-center">
         <p className="text-muted-foreground">Request not found.</p>
       </div>
     )
@@ -225,7 +225,7 @@ export default function RequestPage() {
           void useApiClientStore.getState().saveRequestDescription(description)
         }
       />
-      <div className="flex flex-1 flex-col lg:flex-row overflow-hidden">
+      <div className="flex flex-col lg:flex-row">
         <ResponsePanel response={response} />
         <CommentsPanel
           requestId={draft.id}

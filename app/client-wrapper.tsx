@@ -55,7 +55,7 @@ export function ClientWrapper({ children }: { children: React.ReactNode }) {
           void useApiClientStore.getState().toggleIntegratedStatus(id, type, isIntegrated)
         }
       />
-      <div className="flex min-h-screen flex-1 flex-col overflow-hidden">
+      <div className="flex flex-1 flex-col">
         {children}
       </div>
     </div>

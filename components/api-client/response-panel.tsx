@@ -209,7 +209,7 @@ function JsonViewer({ value }: { value: JsonValue }) {
           </Button>
         </div>
       </div>
-      <ScrollArea className="h-[38vh] lg:h-[44vh]">
+      <ScrollArea className="flex-1 min-h-[300px]">
         <div key={viewerKey} className="p-4">
           <JsonTreeNode value={value} defaultExpanded={isExpanded} />
         </div>
@@ -237,8 +237,8 @@ export function ResponsePanel({ response }: ResponsePanelProps) {
   const formattedBody = response ? formatJsonText(response.bodyText) : '';
 
   return (
-    <section className="flex-1 p-4 lg:p-6">
-      <Card className="h-full">
+    <section className="flex-1 p-4 lg:p-6 min-h-0">
+      <Card className="flex flex-col">
         <CardHeader>
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <div>
@@ -268,7 +268,7 @@ export function ResponsePanel({ response }: ResponsePanelProps) {
             )}
           </div>
         </CardHeader>
-        <CardContent className="flex h-full min-h-0 flex-1 flex-col gap-4">
+        <CardContent className="flex min-h-0 flex-1 flex-col gap-4">
           {!response && (
             <div className="flex flex-1 items-center justify-center rounded-lg border border-dashed border-border bg-muted/20 p-6 text-sm text-muted-foreground">
               Send a request to inspect the response payload.
@@ -325,7 +325,7 @@ export function ResponsePanel({ response }: ResponsePanelProps) {
                   {parsedBody && viewMode === 'tree' ? (
                     <JsonViewer value={parsedBody} />
                   ) : (
-                    <ScrollArea className="h-[38vh] rounded-lg border border-border bg-[#0d1117] lg:h-[44vh]">
+                    <ScrollArea className="flex-1 min-h-[300px] rounded-lg border border-border bg-[#0d1117]">
                       <pre className="p-4 font-mono text-xs whitespace-pre-wrap text-emerald-400">
                         {formattedBody || '(empty response body)'}
                       </pre>

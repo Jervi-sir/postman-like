@@ -200,7 +200,7 @@ export default function Home() {
           void useApiClientStore.getState().saveRequestDescription(description)
         }
       />
-      <div className="flex flex-1 flex-col lg:flex-row overflow-hidden">
+      <div className="flex flex-col lg:flex-row">
         <ResponsePanel response={response} />
         <CommentsPanel
           requestId={draft.id}

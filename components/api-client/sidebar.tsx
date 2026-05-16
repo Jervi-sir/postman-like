@@ -257,7 +257,7 @@ export function Sidebar({
 
   return (
     <aside className={cn(
-      "flex w-full shrink-0 flex-col border-b border-border bg-card transition-all duration-300 relative lg:border-r lg:border-b-0",
+      "flex w-full shrink-0 flex-col border-b border-border bg-card transition-all duration-300 relative lg:border-r lg:border-b-0 lg:h-screen lg:sticky lg:top-0",
       isCollapsed ? "lg:w-16 lg:basis-16 lg:max-w-16" : "lg:w-[260px] lg:basis-[260px] lg:max-w-[260px]"
     )}>
       {/* Toggle Button */}
@@ -305,7 +305,7 @@ export function Sidebar({
       </div>
       <Separator />
 
-      <ScrollArea className="flex-1 lg:h-[calc(100vh-140px)]">
+      <ScrollArea className="flex-1 min-h-0">
         <div className={cn("space-y-4 p-4 transition-all", isCollapsed && "p-2 flex flex-col items-center")}>
           {/* Requests Section */}
           <section className="w-full">

@@ -61,7 +61,7 @@ export function CommentsPanel({
 
   return (
     <aside className="w-full shrink-0 border-t border-border bg-card lg:w-96 lg:border-t-0 lg:border-l">
-      <Card className="h-full rounded-none border-none bg-transparent py-0 ring-0">
+      <Card className="flex min-h-0 flex-col rounded-none border-none bg-transparent py-0 ring-0">
         <CardHeader className="border-b border-border py-4">
           <div className="flex items-start justify-between gap-3">
             <div>
@@ -100,7 +100,7 @@ export function CommentsPanel({
                 </p>
                 <Badge variant="outline">{comments.length}</Badge>
               </div>
-              <ScrollArea className="h-[28vh] rounded-lg border border-border bg-muted/20 lg:h-[calc(100vh-430px)]">
+              <ScrollArea className="flex-1 min-h-[200px] rounded-lg border border-border bg-muted/20">
                 <div className="space-y-3 p-3">
                   {isLoading && (
                     <p className="text-xs text-muted-foreground">Loading comments...</p>
