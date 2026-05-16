@@ -277,6 +277,20 @@ export function RequestEditor({
     }
   }, [draft.queryText, draft.url]);
 
+  const getParamCount = (jsonText: string) => {
+    try {
+      const obj = JSON.parse(jsonText || '{}');
+      return Object.keys(obj).filter((key) => !key.startsWith('//') && key.trim() !== '').length;
+    } catch {
+      return 0;
+    }
+  };
+
+  const queryCount = useMemo(() => getParamCount(draft.queryText), [draft.queryText]);
+  const headerCount = useMemo(() => getParamCount(draft.headersText), [draft.headersText]);
+  const bodyLength = draft.bodyText?.trim().length || 0;
+  const descriptionLength = draft.description?.trim().length || 0;
+
   const handleUrlChange = (urlInput: string) => {
     const patch: Partial<EditorDraft> = { url: urlInput };
 
@@ -566,18 +580,34 @@ export function RequestEditor({
               <TabsTrigger value="query">
                 <HugeiconsIcon icon={Settings01Icon} className="mr-2 size-3.5" />
                 Query Params
+                {queryCount > 0 && (
+                  <span className="ml-1.5 flex h-3.5 min-w-[14px] items-center justify-center rounded-full bg-primary/10 px-1 text-[9px] font-bold text-primary">
+                    {queryCount}
+                  </span>
+                )}
               </TabsTrigger>
               <TabsTrigger value="headers">
                 <HugeiconsIcon icon={Settings02Icon} className="mr-2 size-3.5" />
                 Headers
+                {headerCount > 0 && (
+                  <span className="ml-1.5 flex h-3.5 min-w-[14px] items-center justify-center rounded-full bg-primary/10 px-1 text-[9px] font-bold text-primary">
+                    {headerCount}
+                  </span>
+                )}
               </TabsTrigger>
               <TabsTrigger value="body">
                 <HugeiconsIcon icon={Layers01Icon} className="mr-2 size-3.5" />
                 Body
+                {bodyLength > 0 && (
+                  <span className="ml-1.5 size-1.5 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]" />
+                )}
               </TabsTrigger>
               <TabsTrigger value="description">
                 <HugeiconsIcon icon={Notebook01Icon} className="mr-2 size-3.5" />
                 Description
+                {descriptionLength > 0 && (
+                  <span className="ml-1.5 size-1.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]" />
+                )}
               </TabsTrigger>
               <TabsTrigger value="variables">
                 <HugeiconsIcon icon={Database01Icon} className="mr-2 size-3.5" />
