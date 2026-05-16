@@ -148,6 +148,8 @@ type RequestTabEditorProps = {
   placeholder?: string;
   className?: string;
   EditorComponent: React.ComponentType<any>;
+  initialTab?: TabType;
+  editorProps?: any;
 };
 
 export function RequestTabEditor({
@@ -156,8 +158,10 @@ export function RequestTabEditor({
   placeholder,
   className,
   EditorComponent,
+  initialTab = 'json',
+  editorProps = {},
 }: RequestTabEditorProps) {
-  const [activeTab, setActiveTab] = useState<TabType>('json');
+  const [activeTab, setActiveTab] = useState<TabType>(initialTab);
 
   const { rows, isValidJson } = useMemo(() => {
     try {
@@ -233,6 +237,7 @@ export function RequestTabEditor({
           autoCapitalize="off"
           autoCorrect="off"
           className="[tab-size:2]"
+          {...editorProps}
         />
       ) : (
         <KeyValueTable rows={rows} onChange={handleTableChange} />

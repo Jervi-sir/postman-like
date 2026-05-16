@@ -19,6 +19,12 @@ import {
   MoreHorizontalIcon,
   CheckmarkCircle01Icon,
   CircleIcon,
+  Settings01Icon,
+  Layers01Icon,
+  Notebook01Icon,
+  Database01Icon,
+  Settings02Icon,
+  Copy01Icon,
 } from '@hugeicons/core-free-icons';
 import { RequestTabEditor } from './key-value-editor';
 import { Button } from '@/components/ui/button';
@@ -96,6 +102,7 @@ type CodeTextareaProps = {
   spellCheck?: boolean;
   autoCapitalize?: string;
   autoCorrect?: string;
+  headerRight?: React.ReactNode;
 };
 
 function CodeTextarea({
@@ -103,6 +110,7 @@ function CodeTextarea({
   value,
   onChange,
   onKeyDown,
+  headerRight,
   ...props
 }: CodeTextareaProps) {
   const gutterRef = useRef<HTMLDivElement | null>(null);
@@ -144,8 +152,9 @@ function CodeTextarea({
 
   return (
     <div className="overflow-hidden rounded-xl border border-border/80 bg-[#0d1117] shadow-sm">
-      <div className="border-b border-white/5 bg-white/[0.03] px-3 py-1.5 font-mono text-[11px] tracking-wide text-slate-400 uppercase">
-        Editor
+      <div className="flex items-center justify-between border-b border-white/5 bg-white/[0.03] px-3 py-1.5 font-mono text-[11px] tracking-wide text-slate-400 uppercase">
+        <span>Editor</span>
+        {headerRight}
       </div>
       <div className="flex min-h-0">
         <div
@@ -236,6 +245,77 @@ export function RequestEditor({
       .filter(Boolean)
       .sort((left, right) => left.localeCompare(right));
   }, [draft.groupName, requests]);
+
+  const urlPreview = useMemo(() => {
+    try {
+      const queryParams = JSON.parse(draft.queryText || '{}');
+      const searchParams = new URLSearchParams();
+      Object.entries(queryParams).forEach(([key, value]) => {
+        if (value !== null && value !== undefined && value !== '') {
+          searchParams.append(key, String(value));
+        }
+      });
+      const qs = searchParams.toString();
+      const baseUrl = draft.url || '';
+
+      if (!qs) return baseUrl;
+
+      try {
+        const url = new URL(baseUrl);
+        Object.entries(queryParams).forEach(([key, value]) => {
+          if (value !== null && value !== undefined && value !== '') {
+            url.searchParams.set(key, String(value));
+          }
+        });
+        return url.toString();
+      } catch {
+        const separator = baseUrl.includes('?') ? '&' : '?';
+        return `${baseUrl}${separator}${qs}`;
+      }
+    } catch {
+      return draft.url;
+    }
+  }, [draft.queryText, draft.url]);
+
+  const handleUrlChange = (urlInput: string) => {
+    const patch: Partial<EditorDraft> = { url: urlInput };
+
+    if (urlInput.includes('?')) {
+      const [, queryString] = urlInput.split('?');
+      const searchParams = new URLSearchParams(queryString);
+      const params: Record<string, string> = {};
+      searchParams.forEach((value, key) => {
+        params[key] = value;
+      });
+      patch.queryText = JSON.stringify(params, null, 2);
+    } else {
+      patch.queryText = '{}';
+    }
+
+    onChange(patch);
+  };
+
+  const handleQueryChange = (queryText: string) => {
+    const patch: Partial<EditorDraft> = { queryText };
+
+    try {
+      const params = JSON.parse(queryText);
+      const searchParams = new URLSearchParams();
+      Object.entries(params).forEach(([key, value]) => {
+        if (!key.startsWith('//')) {
+          searchParams.append(key, String(value));
+        }
+      });
+
+      const qs = searchParams.toString();
+      const baseUrl = draft.url.split('?')[0];
+      patch.url = qs ? `${baseUrl}?${qs}` : baseUrl;
+    } catch {
+      // Invalid JSON, don't sync URL
+    }
+
+    onChange(patch);
+  };
 
   function handleImportCurl() {
     try {
@@ -469,7 +549,7 @@ export function RequestEditor({
             <Input
               label="URL"
               value={draft.url}
-              onChange={(event) => onChange({ url: event.target.value })}
+              onChange={(event) => handleUrlChange(event.target.value)}
               placeholder="https://api.example.com/users"
             />
           </div>
@@ -478,16 +558,31 @@ export function RequestEditor({
               {editorError}
             </div>
           )}
-          <Tabs defaultValue="body" className="gap-4">
+          <Tabs defaultValue="query" className="gap-4">
             <TabsList
               variant="line"
               className="justify-start rounded-none p-0"
             >
-              <TabsTrigger value="description">Description</TabsTrigger>
-              <TabsTrigger value="body">Body</TabsTrigger>
-              <TabsTrigger value="headers">Headers</TabsTrigger>
-              {/* <TabsTrigger value="query">Query Params</TabsTrigger> */}
-              <TabsTrigger value="variables">{variablesTitle}</TabsTrigger>
+              <TabsTrigger value="query">
+                <HugeiconsIcon icon={Settings01Icon} className="mr-2 size-3.5" />
+                Query Params
+              </TabsTrigger>
+              <TabsTrigger value="headers">
+                <HugeiconsIcon icon={Settings02Icon} className="mr-2 size-3.5" />
+                Headers
+              </TabsTrigger>
+              <TabsTrigger value="body">
+                <HugeiconsIcon icon={Layers01Icon} className="mr-2 size-3.5" />
+                Body
+              </TabsTrigger>
+              <TabsTrigger value="description">
+                <HugeiconsIcon icon={Notebook01Icon} className="mr-2 size-3.5" />
+                Description
+              </TabsTrigger>
+              <TabsTrigger value="variables">
+                <HugeiconsIcon icon={Database01Icon} className="mr-2 size-3.5" />
+                {variablesTitle}
+              </TabsTrigger>
             </TabsList>
             <TabsContent value="headers">
               <RequestTabEditor
@@ -503,10 +598,28 @@ export function RequestEditor({
                 placeholder='{"Content-Type":"application/json"}'
               />
             </TabsContent>
-            <TabsContent value="query">
+            <TabsContent value="query" className="space-y-3">
+              {/* {urlPreview && (
+                <div className="rounded-lg border border-border/80 bg-black/20 px-3 py-2 font-mono text-[11px] text-slate-400 break-all">
+                  <div className="mb-1.5 flex items-center justify-between">
+                    <span className="text-primary uppercase text-[9px] font-bold tracking-wider">Full URL Preview</span>
+                    <button 
+                      className="text-[9px] hover:text-primary transition-colors uppercase font-bold"
+                      onClick={() => {
+                        navigator.clipboard.writeText(urlPreview);
+                        toast.success('URL copied');
+                      }}
+                    >
+                      Copy
+                    </button>
+                  </div>
+                  <div className="opacity-80 leading-relaxed">{urlPreview}</div>
+                </div>
+              )} */}
               <RequestTabEditor
                 value={draft.queryText}
-                onChange={(value) => onChange({ queryText: value })}
+                onChange={handleQueryChange}
+                initialTab="table"
                 EditorComponent={CodeTextarea}
                 placeholder='{"page":1,"limit":20}'
               />
@@ -517,6 +630,21 @@ export function RequestEditor({
                 onChange={(value) => onChange({ bodyText: value })}
                 EditorComponent={CodeTextarea}
                 placeholder='{"name":"Jane Doe"}'
+                editorProps={{
+                  headerRight: (
+                    <button
+                      title="Copy body"
+                      onClick={() => {
+                        navigator.clipboard.writeText(draft.bodyText);
+                        toast.success('Body copied to clipboard');
+                      }}
+                      className="hover:text-primary transition-colors flex items-center gap-1.5 lowercase"
+                    >
+                      <HugeiconsIcon icon={Copy01Icon} className="size-3" />
+                      <span>Copy</span>
+                    </button>
+                  )
+                }}
               />
             </TabsContent>
             <TabsContent value="variables" className="space-y-3">
